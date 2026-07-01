@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h4 class="mb-3">All Bookings</h4>
+
+<table class="table table-bordered table-hover bg-white">
+    <thead class="table-dark">
+        <tr>
+            <th>Booking ID</th>
+            <th>Trekker</th>
+            <th>Trek</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Payment</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for booking in bookings %}
+        <tr>
+            <td>#{{ booking.id }}</td>
+            <td>{{ booking.trekker.name }}</td>
+            <td>{{ booking.trek.name }}</td>
+            <td>{{ booking.booking_date }}</td>
+            <td>
+                <span class="badge
+                    {% if booking.status == 'Booked' %}bg-success
+                    {% elif booking.status == 'Cancelled' %}bg-danger
+                    {% else %}bg-secondary{% endif %}">
+                    {{ booking.status }}
+                </span>
+            </td>
+            <td>{{ booking.payment_status }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted">No bookings yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+
+                <h4 class="mb-4">{{ 'Edit Trek' if trek else 'Create Trek' }}</h4>
+
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Trek Name</label>
+                        <input type="text" name="name" class="form-control" required
+                               value="{{ trek.name if trek else '' }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Location</label>
+                        <input type="text" name="location" class="form-control" required
+                               value="{{ trek.location if trek else '' }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Difficulty</label>
+                        <select name="difficulty" class="form-select" required>
+                            <option value="">-- Select --</option>
+                            {% for level in ['Easy', 'Medium', 'Hard'] %}
+                            <option value="{{ level }}"
+                                {% if trek and trek.difficulty == level %}selected{% endif %}>
+                                {{ level }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Duration (days)</label>
+                        <input type="number" name="duration_days" class="form-control" required min="1"
+                               value="{{ trek.duration_days if trek else '' }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Total Slots</label>
+                        <input type="number" name="total_slots" class="form-control" required min="1"
+                               value="{{ trek.total_slots if trek else '' }}">
+                    </div>
+
+                    {% if trek %}
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            {% for s in ['Pending', 'Open', 'Closed', 'Completed'] %}
+                            <option value="{{ s }}" {% if trek.status == s %}selected{% endif %}>{{ s }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-dark">
+                            {{ 'Update Trek' if trek else 'Create Trek' }}
+                        </button>
+                        <a href="{{ url_for('admin_treks') }}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

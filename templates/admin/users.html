@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h4 class="mb-3">Users & Staff</h4>
+
+<form method="GET" action="{{ url_for('admin_users') }}" class="mb-3 d-flex gap-2">
+    <input type="text" name="search" class="form-control" placeholder="Search by name" value="{{ search }}">
+    <button type="submit" class="btn btn-outline-dark">Search</button>
+    <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary">Clear</a>
+</form>
+
+<table class="table table-bordered table-hover bg-white">
+    <thead class="table-dark">
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Approved</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.role }}</td>
+            <td>
+                <span class="badge {{ 'bg-success' if user.is_active else 'bg-danger' }}">
+                    {{ 'Active' if user.is_active else 'Inactive' }}
+                </span>
+            </td>
+            <td>
+                {% if user.role == 'staff' %}
+                    <span class="badge {{ 'bg-success' if user.is_approved else 'bg-warning text-dark' }}">
+                        {{ 'Approved' if user.is_approved else 'Pending' }}
+                    </span>
+                {% else %}
+                    <span class="text-muted">—</span>
+                {% endif %}
+            </td>
+            <td class="d-flex gap-1 flex-wrap">
+                <a href="{{ url_for('toggle_user', user_id=user.id) }}"
+                   class="btn btn-sm {{ 'btn-outline-danger' if user.is_active else 'btn-outline-success' }}">
+                    {{ 'Deactivate' if user.is_active else 'Activate' }}
+                </a>
+
+                {% if user.role == 'staff' and not user.is_approved %}
+                <a href="{{ url_for('approve_staff', user_id=user.id) }}" class="btn btn-sm btn-outline-dark">
+                    Approve
+                </a>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted">No users found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

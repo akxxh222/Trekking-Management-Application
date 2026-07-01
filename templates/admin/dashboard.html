@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h4 class="mb-4">Admin Dashboard</h4>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card text-center p-3 border-0 bg-light">
+            <h2 class="fw-bold">{{ total_treks }}</h2>
+            <p class="text-muted mb-0">Total Treks</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-3 border-0 bg-light">
+            <h2 class="fw-bold">{{ total_users }}</h2>
+            <p class="text-muted mb-0">Trekkers</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-3 border-0 bg-light">
+            <h2 class="fw-bold">{{ total_staff }}</h2>
+            <p class="text-muted mb-0">Trek Staff</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-3 border-0 bg-light">
+            <h2 class="fw-bold">{{ total_bookings }}</h2>
+            <p class="text-muted mb-0">Bookings</p>
+        </div>
+    </div>
+</div>
+
+{% if pending_staff > 0 %}
+<div class="alert alert-warning">
+     {{ pending_staff }} staff account(s) are pending approval.
+    <a href="{{ url_for('admin_users') }}" class="alert-link">Review now</a>
+</div>
+{% endif %}
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <a href="{{ url_for('admin_treks') }}" class="btn btn-dark w-100 py-3">Manage Treks</a>
+    </div>
+    <div class="col-md-4">
+        <a href="{{ url_for('admin_users') }}" class="btn btn-dark w-100 py-3">Manage Users & Staff</a>
+    </div>
+    <div class="col-md-4">
+        <a href="{{ url_for('admin_bookings') }}" class="btn btn-dark w-100 py-3">View All Bookings</a>
+    </div>
+</div>
+{% endblock %}
