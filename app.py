@@ -292,18 +292,235 @@ def admin_bookings():
     return render_template('admin/bookings.html', bookings=bookings)
 
 
+# ─── Staff Routes ──────────────────────────────────────────────
+
 @app.route('/staff/dashboard')
 @login_required
 @role_required('staff')
 def staff_dashboard():
-    return f"Welcome Staff: {session['name']} — Dashboard coming"
+    # Staff can only see treks assigned to them
+    assigned_treks = Trek.query.filter_by(assigned_staff_id=session['user_id']).all()
 
+    return render_template('staff/dashboard.html',
+        assigned_treks=assigned_treks
+    )
+
+
+@app.route('/staff/trek/<int:trek_id>')
+@login_required
+@role_required('staff')
+def staff_trek_detail(trek_id):
+    trek = Trek.query.get_or_404(trek_id)
+
+    # Make sure this staff is actually assigned to this trek
+    if trek.assigned_staff_id != session['user_id']:
+        flash('You are not assigned to this trek.')
+        return redirect(url_for('staff_dashboard'))
+
+    # Get all bookings for this trek
+    bookings = Booking.query.filter_by(trek_id=trek_id).all()
+
+    return render_template('staff/trek_detail.html',
+        trek=trek,
+        bookings=bookings
+    )
+
+
+@app.route('/staff/trek/<int:trek_id>/update', methods=['POST'])
+@login_required
+@role_required('staff')
+def staff_update_trek(trek_id):
+    trek = Trek.query.get_or_404(trek_id)
+
+    if trek.assigned_staff_id != session['user_id']:
+        flash('You are not assigned to this trek.')
+        return redirect(url_for('staff_dashboard'))
+
+    new_status = request.form.get('status')
+    new_slots = request.form.get('available_slots')
+
+    if new_status:
+        trek.status = new_status
+
+    if new_slots:
+        trek.available_slots = int(new_slots)
+
+    db.session.commit()
+    flash('Trek updated successfully.')
+    return redirect(url_for('staff_trek_detail', trek_id=trek_id))
+
+@app.route('/staff/profile', methods=['GET', 'POST'])
+@login_required
+@role_required('staff')
+def staff_profile():
+    user = User.query.get(session['user_id'])
+
+    if request.method == 'POST':
+        user.name = request.form['name']
+        new_password = request.form.get('password')
+
+        if new_password:
+            user.password = generate_password_hash(new_password)
+
+        db.session.commit()
+        session['name'] = user.name  # Update navbar name immediately
+        flash('Profile updated successfully.')
+        return redirect(url_for('staff_profile'))
+
+    return render_template('staff/profile.html', user=user)
+
+
+# ─── User Routes ───────────────────────────────────────────────
 
 @app.route('/user/dashboard')
 @login_required
 @role_required('trekker')
 def user_dashboard():
-    return f"Welcome Trekker: {session['name']} — Dashboard coming"
+    user = User.query.get(session['user_id'])
+
+    # Count this user's bookings
+    total_bookings = Booking.query.filter_by(user_id=session['user_id']).count()
+    active_bookings = Booking.query.filter_by(
+        user_id=session['user_id'],
+        status='Booked'
+    ).count()
+
+    return render_template('user/dashboard.html',
+        user=user,
+        total_bookings=total_bookings,
+        active_bookings=active_bookings
+    )
+
+
+@app.route('/user/treks')
+@login_required
+@role_required('trekker')
+def user_treks():
+    search = request.args.get('search', '')
+    difficulty = request.args.get('difficulty', '')
+    location = request.args.get('location', '')  
+
+    query = Trek.query.filter_by(status='Open')
+
+    if search:
+        query = query.filter(Trek.name.contains(search))
+
+    if difficulty:
+        query = query.filter_by(difficulty=difficulty)
+
+    if location:                                          
+        query = query.filter(Trek.location.contains(location))
+
+    treks = query.all()
+
+    user_bookings = Booking.query.filter_by(user_id=session['user_id']).all()
+    booked_trek_ids = [b.trek_id for b in user_bookings if b.status == 'Booked']
+
+    return render_template('user/treks.html',
+        treks=treks,
+        booked_trek_ids=booked_trek_ids,
+        search=search,
+        difficulty=difficulty,
+        location=location      
+    )
+
+
+@app.route('/user/book/<int:trek_id>')
+@login_required
+@role_required('trekker')
+def book_trek(trek_id):
+    trek = Trek.query.get_or_404(trek_id)
+
+    # Check 1: Trek must be Open
+    if trek.status != 'Open':
+        flash('This trek is not open for booking.')
+        return redirect(url_for('user_treks'))
+
+    # Check 2: Slots must be available
+    if trek.available_slots <= 0:
+        flash('No slots available for this trek.')
+        return redirect(url_for('user_treks'))
+
+    # Check 3: User must not have already booked this trek
+    existing = Booking.query.filter_by(
+        user_id=session['user_id'],
+        trek_id=trek_id,
+        status='Booked'
+    ).first()
+
+    if existing:
+        flash('You have already booked this trek.')
+        return redirect(url_for('user_treks'))
+
+    # All checks passed — create the booking
+    new_booking = Booking(
+        user_id=session['user_id'],
+        trek_id=trek_id,
+        booking_date=str(date.today()),
+        status='Booked',
+        payment_status='Paid'
+    )
+
+    trek.available_slots -= 1  # Reduce available slots by 1
+
+    db.session.add(new_booking)
+    db.session.commit()
+
+    flash(f'Successfully booked {trek.name}!')
+    return redirect(url_for('my_bookings'))
+
+
+@app.route('/user/bookings')
+@login_required
+@role_required('trekker')
+def my_bookings():
+    bookings = Booking.query.filter_by(user_id=session['user_id']).all()
+    return render_template('user/my_bookings.html', bookings=bookings)
+
+
+@app.route('/user/cancel/<int:booking_id>')
+@login_required
+@role_required('trekker')
+def cancel_booking(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+
+    # Make sure this booking belongs to the logged-in user
+    if booking.user_id != session['user_id']:
+        flash('You cannot cancel this booking.')
+        return redirect(url_for('my_bookings'))
+
+    # Only allow cancelling active bookings
+    if booking.status != 'Booked':
+        flash('This booking cannot be cancelled.')
+        return redirect(url_for('my_bookings'))
+
+    booking.status = 'Cancelled'
+    booking.trek.available_slots += 1  # Restore the slot
+
+    db.session.commit()
+    flash('Booking cancelled. Slot has been restored.')
+    return redirect(url_for('my_bookings'))
+
+
+@app.route('/user/profile', methods=['GET', 'POST'])
+@login_required
+@role_required('trekker')
+def user_profile():
+    user = User.query.get(session['user_id'])
+
+    if request.method == 'POST':
+        user.name = request.form['name']
+        new_password = request.form.get('password')
+
+        if new_password:
+            user.password = generate_password_hash(new_password)
+
+        db.session.commit()
+        session['name'] = user.name  # Update session name too
+        flash('Profile updated successfully.')
+        return redirect(url_for('user_profile'))
+
+    return render_template('user/profile.html', user=user)
 
 
 if __name__ == '__main__':
