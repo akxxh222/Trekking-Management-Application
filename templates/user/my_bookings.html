@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">My Bookings</h4>
+    <a href="{{ url_for('user_treks') }}" class="btn btn-dark btn-sm">Browse More Treks</a>
+</div>
+
+<table class="table table-bordered bg-white">
+    <thead class="table-dark">
+        <tr>
+            <th>#</th>
+            <th>Trek</th>
+            <th>Location</th>
+            <th>Booked On</th>
+            <th>Trek Status</th>
+            <th>Booking Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for booking in bookings %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ booking.trek.name }}</td>
+            <td>{{ booking.trek.location }}</td>
+            <td>{{ booking.booking_date }}</td>
+            <td>
+                <span class="badge
+                    {% if booking.trek.status == 'Open' %}bg-success
+                    {% elif booking.trek.status == 'Completed' %}bg-dark
+                    {% else %}bg-secondary{% endif %}">
+                    {{ booking.trek.status }}
+                </span>
+            </td>
+            <td>
+                <span class="badge
+                    {% if booking.status == 'Booked' %}bg-success
+                    {% elif booking.status == 'Cancelled' %}bg-danger
+                    {% else %}bg-secondary{% endif %}">
+                    {{ booking.status }}
+                </span>
+            </td>
+            <td>
+                {% if booking.status == 'Booked' %}
+                <a href="{{ url_for('cancel_booking', booking_id=booking.id) }}"
+                   class="btn btn-sm btn-outline-danger"
+                   onclick="return confirm('Cancel this booking?')">Cancel</a>
+                {% else %}
+                <span class="text-muted">—</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="7" class="text-center text-muted">You have no bookings yet.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

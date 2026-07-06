@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h4 class="mb-3">Available Treks</h4>
+
+<form method="GET" action="{{ url_for('user_treks') }}" class="row g-2 mb-4">
+    <div class="col-md-4">
+        <input type="text" name="search" class="form-control"
+               placeholder="Search by trek name" value="{{ search }}">
+    </div>
+    <div class="col-md-3">
+        <input type="text" name="location" class="form-control"
+               placeholder="Filter by location" value="{{ location }}">
+    </div>
+    <div class="col-md-2">
+        <select name="difficulty" class="form-select">
+            <option value="">All Difficulties</option>
+            {% for level in ['Easy', 'Medium', 'Hard'] %}
+            <option value="{{ level }}" {% if difficulty == level %}selected{% endif %}>
+                {{ level }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-dark">Filter</button>
+        <a href="{{ url_for('user_treks') }}" class="btn btn-outline-secondary">Clear</a>
+    </div>
+</form>
+
+{% if treks %}
+<div class="row g-3">
+    {% for trek in treks %}
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <h5 class="card-title">{{ trek.name }}</h5>
+                    <span class="badge bg-success">Open</span>
+                </div>
+                <p class="text-muted mb-1">📍 {{ trek.location }}</p>
+                <p class="text-muted mb-1">⛰ {{ trek.difficulty }} · {{ trek.duration_days }} days</p>
+                <p class="mb-3">
+                    <strong>{{ trek.available_slots }}</strong> slots remaining
+                </p>
+
+                {% if trek.id in booked_trek_ids %}
+                    <span class="badge bg-secondary p-2">Already Booked</span>
+                {% elif trek.available_slots == 0 %}
+                    <span class="badge bg-danger p-2">Full</span>
+                {% else %}
+                    <a href="{{ url_for('book_trek', trek_id=trek.id) }}"
+                       class="btn btn-dark btn-sm"
+                       onclick="return confirm('Book {{ trek.name }}?')">Book Now</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info">No open treks found matching your search.</div>
+{% endif %}
+{% endblock %}
