@@ -33,12 +33,14 @@
             <td>{{ trek.available_slots }} / {{ trek.total_slots }}</td>
             <td>
                 <span class="badge 
-                    {% if trek.status == 'Open' %}bg-success
-                    {% elif trek.status == 'Closed' %}bg-secondary
-                    {% elif trek.status == 'Completed' %}bg-dark
-                    {% else %}bg-warning text-dark{% endif %}">
-                    {{ trek.status }}
-                </span>
+                {% if trek.status == 'Open' %}bg-success
+                {% elif trek.status == 'Started' %}bg-primary
+                {% elif trek.status == 'Ongoing' %}bg-info text-dark
+                {% elif trek.status == 'Closed' %}bg-secondary
+                {% elif trek.status == 'Completed' %}bg-dark
+                {% else %}bg-warning text-dark{% endif %}">
+                {{ trek.status }}
+            </span>
             </td>
             <td>
                 {% if trek.assigned_staff_id %}
