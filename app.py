@@ -291,6 +291,25 @@ def admin_bookings():
     bookings = Booking.query.all()
     return render_template('admin/bookings.html', bookings=bookings)
 
+@app.route('/admin/booking/update/<int:booking_id>', methods=['POST'])
+@login_required
+@role_required('admin')
+def update_booking_status(booking_id):
+    booking = Booking.query.get_or_404(booking_id)
+    new_status = request.form.get('status')
+
+    if new_status:
+        booking.status = new_status
+
+        # If admin marks booking as Completed, restore nothing
+        # If admin cancels, restore the slot
+        if new_status == 'Cancelled':
+            booking.trek.available_slots += 1
+
+    db.session.commit()
+    flash('Booking status updated.')
+    return redirect(url_for('admin_bookings'))
+
 
 # ─── Staff Routes ──────────────────────────────────────────────
 
@@ -368,6 +387,34 @@ def staff_profile():
         return redirect(url_for('staff_profile'))
 
     return render_template('staff/profile.html', user=user)
+
+@app.route('/staff/trek/<int:trek_id>/update', methods=['POST'])
+@login_required
+@role_required('staff')
+def staff_update_trek(trek_id):
+    trek = Trek.query.get_or_404(trek_id)
+
+    if trek.assigned_staff_id != session['user_id']:
+        flash('You are not assigned to this trek.')
+        return redirect(url_for('staff_dashboard'))
+
+    new_status = request.form.get('status')
+    new_slots = request.form.get('available_slots')
+
+    # Prevent moving a Completed trek back to any other status
+    if trek.status == 'Completed' and new_status != 'Completed':
+        flash('A completed trek cannot be reopened.')
+        return redirect(url_for('staff_trek_detail', trek_id=trek_id))
+
+    if new_status:
+        trek.status = new_status
+
+    if new_slots:
+        trek.available_slots = int(new_slots)
+
+    db.session.commit()
+    flash('Trek updated successfully.')
+    return redirect(url_for('staff_trek_detail', trek_id=trek_id))
 
 
 # ─── User Routes ───────────────────────────────────────────────
@@ -522,6 +569,26 @@ def user_profile():
 
     return render_template('user/profile.html', user=user)
 
+@app.route('/user/history')
+@login_required
+@role_required('trekker')
+def trekking_history():
+    # Active bookings - currently booked
+    active = Booking.query.filter_by(
+        user_id=session['user_id'],
+        status='Booked'
+    ).all()
+
+    # Past bookings - completed or cancelled
+    past = Booking.query.filter(
+        Booking.user_id == session['user_id'],
+        Booking.status.in_(['Completed', 'Cancelled'])
+    ).all()
+
+    return render_template('user/history.html', active=active, past=past)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
