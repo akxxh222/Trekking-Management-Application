@@ -344,30 +344,6 @@ def staff_trek_detail(trek_id):
         bookings=bookings
     )
 
-
-@app.route('/staff/trek/<int:trek_id>/update', methods=['POST'])
-@login_required
-@role_required('staff')
-def staff_update_trek(trek_id):
-    trek = Trek.query.get_or_404(trek_id)
-
-    if trek.assigned_staff_id != session['user_id']:
-        flash('You are not assigned to this trek.')
-        return redirect(url_for('staff_dashboard'))
-
-    new_status = request.form.get('status')
-    new_slots = request.form.get('available_slots')
-
-    if new_status:
-        trek.status = new_status
-
-    if new_slots:
-        trek.available_slots = int(new_slots)
-
-    db.session.commit()
-    flash('Trek updated successfully.')
-    return redirect(url_for('staff_trek_detail', trek_id=trek_id))
-
 @app.route('/staff/profile', methods=['GET', 'POST'])
 @login_required
 @role_required('staff')
