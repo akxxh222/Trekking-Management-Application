@@ -1,42 +1,51 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h4 class="mb-4">Admin Dashboard</h4>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-0">Admin Dashboard</h4>
+        <p class="text-muted mb-0" style="font-size:0.85rem;">Overview of all activity</p>
+    </div>
+</div>
 
 <div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card text-center p-3 border-0 bg-light">
-            <h2 class="fw-bold">{{ total_treks }}</h2>
-            <p class="text-muted mb-0">Total Treks</p>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <h2>{{ total_treks }}</h2>
+            <p>Total Treks</p>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center p-3 border-0 bg-light">
-            <h2 class="fw-bold">{{ total_users }}</h2>
-            <p class="text-muted mb-0">Trekkers</p>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <h2>{{ total_users }}</h2>
+            <p>Trekkers</p>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center p-3 border-0 bg-light">
-            <h2 class="fw-bold">{{ total_staff }}</h2>
-            <p class="text-muted mb-0">Trek Staff</p>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <h2>{{ total_staff }}</h2>
+            <p>Trek Staff</p>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-center p-3 border-0 bg-light">
-            <h2 class="fw-bold">{{ total_bookings }}</h2>
-            <p class="text-muted mb-0">Bookings</p>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <h2>{{ total_bookings }}</h2>
+            <p>Bookings</p>
         </div>
     </div>
 </div>
 
 {% if pending_staff > 0 %}
-<div class="alert alert-warning">
-     {{ pending_staff }} staff account(s) are pending approval.
-    <a href="{{ url_for('admin_users') }}" class="alert-link">Review now</a>
+<div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
+    <span>⚠</span>
+    <span>
+        {{ pending_staff }} staff account(s) pending approval.
+        <a href="{{ url_for('admin_users') }}" class="alert-link ms-1">Review now →</a>
+    </span>
 </div>
 {% endif %}
 
+<p class="section-title">Quick Actions</p>
 <div class="row g-3">
     <div class="col-md-4">
         <a href="{{ url_for('admin_treks') }}" class="btn btn-dark w-100 py-3">Manage Treks</a>

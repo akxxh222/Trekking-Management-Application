@@ -8,7 +8,7 @@
     <button type="submit" class="btn btn-outline-dark">Search</button>
     <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary">Clear</a>
 </form>
-
+<div class="table-responsive">
 <table class="table table-bordered table-hover bg-white">
     <thead class="table-dark">
         <tr>
@@ -58,4 +58,5 @@
         {% endfor %}
     </tbody>
 </table>
+</div>
 {% endblock %}
