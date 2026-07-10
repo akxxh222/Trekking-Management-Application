@@ -310,6 +310,40 @@ def update_booking_status(booking_id):
     flash('Booking status updated.')
     return redirect(url_for('admin_bookings'))
 
+@app.route('/admin/charts')
+@login_required
+@role_required('admin')
+def admin_charts():
+    # Total treks by status
+    statuses = ['Pending', 'Open', 'Closed', 'Started', 'Ongoing', 'Completed']
+    trek_counts = [Trek.query.filter_by(status=s).count() for s in statuses]
+
+    # Bookings per day (last 7 days)
+    from datetime import datetime, timedelta
+    dates = []
+    booking_counts = []
+    for i in range(6, -1, -1):
+        day = date.today() - timedelta(days=i)
+        day_str = str(day)
+        count = Booking.query.filter_by(booking_date=day_str).count()
+        dates.append(day.strftime('%d %b'))
+        booking_counts.append(count)
+
+    # Active users (trekkers with at least one booking)
+    from sqlalchemy import func
+    active_users = db.session.query(Booking.user_id).distinct().count()
+    total_trekkers = User.query.filter_by(role='trekker').count()
+    inactive_users = total_trekkers - active_users
+
+    return render_template('admin/charts.html',
+        statuses=statuses,
+        trek_counts=trek_counts,
+        dates=dates,
+        booking_counts=booking_counts,
+        active_users=active_users,
+        inactive_users=inactive_users
+    )
+
 
 # ─── Staff Routes ──────────────────────────────────────────────
 
@@ -391,6 +425,28 @@ def staff_update_trek(trek_id):
     db.session.commit()
     flash('Trek updated successfully.')
     return redirect(url_for('staff_trek_detail', trek_id=trek_id))
+
+@app.route('/staff/charts')
+@login_required
+@role_required('staff')
+def staff_charts():
+    assigned_treks = Trek.query.filter_by(assigned_staff_id=session['user_id']).all()
+
+    trek_names = []
+    participant_counts = []
+    slot_remaining = []
+
+    for trek in assigned_treks:
+        trek_names.append(trek.name)
+        count = Booking.query.filter_by(trek_id=trek.id, status='Booked').count()
+        participant_counts.append(count)
+        slot_remaining.append(trek.available_slots)
+
+    return render_template('staff/charts.html',
+        trek_names=trek_names,
+        participant_counts=participant_counts,
+        slot_remaining=slot_remaining
+    )
 
 
 # ─── User Routes ───────────────────────────────────────────────
@@ -563,6 +619,31 @@ def trekking_history():
 
     return render_template('user/history.html', active=active, past=past)
 
+@app.route('/user/charts')
+@login_required
+@role_required('trekker')
+def user_charts():
+    bookings = Booking.query.filter_by(user_id=session['user_id']).all()
+
+    # Booking status breakdown
+    booked = sum(1 for b in bookings if b.status == 'Booked')
+    completed = sum(1 for b in bookings if b.status == 'Completed')
+    cancelled = sum(1 for b in bookings if b.status == 'Cancelled')
+
+    # Difficulty breakdown of all booked treks
+    difficulties = {'Easy': 0, 'Medium': 0, 'Hard': 0}
+    for b in bookings:
+        diff = b.trek.difficulty
+        if diff in difficulties:
+            difficulties[diff] += 1
+
+    return render_template('user/charts.html',
+        booked=booked,
+        completed=completed,
+        cancelled=cancelled,
+        difficulties=list(difficulties.keys()),
+        diff_counts=list(difficulties.values())
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-0">My Trekking Stats</h4>
+        <p class="text-muted mb-0" style="font-size:0.85rem;">Your booking activity at a glance</p>
+    </div>
+    <a href="{{ url_for('user_dashboard') }}" class="btn btn-outline-dark btn-sm">← Dashboard</a>
+</div>
+
+{% if booked + completed + cancelled == 0 %}
+<div class="alert alert-info">No bookings yet. Book a trek to see your stats here.</div>
+{% else %}
+
+<div class="row g-4">
+
+    <div class="col-md-5">
+        <div class="trek-card">
+            <p class="section-title">Booking Status Breakdown</p>
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="trek-card">
+            <p class="section-title">Treks by Difficulty</p>
+            <canvas id="difficultyChart"></canvas>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const booked = {{ booked }};
+    const completed = {{ completed }};
+    const cancelled = {{ cancelled }};
+    const difficulties = {{ difficulties | tojson }};
+    const diffCounts = {{ diff_counts | tojson }};
+
+    // Chart 1: Booking status — doughnut
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Active', 'Completed', 'Cancelled'],
+            datasets: [{
+                data: [booked, completed, cancelled],
+                backgroundColor: ['#198754', '#343a40', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    // Chart 2: Difficulty breakdown — bar
+    new Chart(document.getElementById('difficultyChart'), {
+        type: 'bar',
+        data: {
+            labels: difficulties,
+            datasets: [{
+                label: 'Treks Booked',
+                data: diffCounts,
+                backgroundColor: ['#198754', '#ffc107', '#dc3545'],
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+</script>
+
+{% endif %}
+{% endblock %}

@@ -160,6 +160,9 @@
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('admin_bookings') }}">Bookings</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('admin_charts') }}">Charts</a>
+            </li>
         </ul>
 
         {% elif session.get('role') == 'staff' %}
@@ -169,6 +172,9 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('staff_profile') }}">Profile</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('staff_charts') }}">Charts</a>
             </li>
         </ul>
 
@@ -188,6 +194,9 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('user_profile') }}">Profile</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('user_charts') }}">My Stats</a>
             </li>
         </ul>
         {% else %}

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-0">Trek Analytics</h4>
+        <p class="text-muted mb-0" style="font-size:0.85rem;">Participant data for your assigned treks</p>
+    </div>
+    <a href="{{ url_for('staff_dashboard') }}" class="btn btn-outline-dark btn-sm">← Dashboard</a>
+</div>
+
+{% if trek_names %}
+<div class="row g-4">
+
+    <div class="col-md-7">
+        <div class="trek-card">
+            <p class="section-title">Participants per Trek</p>
+            <canvas id="participantChart"></canvas>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="trek-card">
+            <p class="section-title">Slots Remaining per Trek</p>
+            <canvas id="slotsChart"></canvas>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const trekNames = {{ trek_names | tojson }};
+    const participantCounts = {{ participant_counts | tojson }};
+    const slotRemaining = {{ slot_remaining | tojson }};
+
+    // Chart 1: Participants per trek — horizontal bar
+    new Chart(document.getElementById('participantChart'), {
+        type: 'bar',
+        data: {
+            labels: trekNames,
+            datasets: [{
+                label: 'Participants',
+                data: participantCounts,
+                backgroundColor: '#343a40',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+
+    // Chart 2: Slots remaining — doughnut per trek
+    new Chart(document.getElementById('slotsChart'), {
+        type: 'doughnut',
+        data: {
+            labels: trekNames,
+            datasets: [{
+                data: slotRemaining,
+                backgroundColor: ['#343a40', '#6c757d', '#adb5bd', '#dee2e6']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+</script>
+
+{% else %}
+<div class="alert alert-info">No treks assigned yet. Charts will appear once you are assigned to treks.</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-0">Charts & Analytics</h4>
+        <p class="text-muted mb-0" style="font-size:0.85rem;">Overview of platform activity</p>
+    </div>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-dark btn-sm">← Dashboard</a>
+</div>
+
+<div class="row g-4">
+
+    <div class="col-md-6">
+        <div class="trek-card">
+            <p class="section-title">Treks by Status</p>
+            <canvas id="trekStatusChart"></canvas>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="trek-card">
+            <p class="section-title">Active vs Inactive Trekkers</p>
+            <canvas id="userChart"></canvas>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="trek-card">
+            <p class="section-title">Bookings — Last 7 Days</p>
+            <canvas id="bookingChart"></canvas>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Data passed from Flask
+    const statuses = {{ statuses | tojson }};
+    const trekCounts = {{ trek_counts | tojson }};
+    const dates = {{ dates | tojson }};
+    const bookingCounts = {{ booking_counts | tojson }};
+    const activeUsers = {{ active_users }};
+    const inactiveUsers = {{ inactive_users }};
+
+    // Chart 1: Treks by status — bar chart
+    new Chart(document.getElementById('trekStatusChart'), {
+        type: 'bar',
+        data: {
+            labels: statuses,
+            datasets: [{
+                label: 'Number of Treks',
+                data: trekCounts,
+                backgroundColor: '#343a40',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+
+    // Chart 2: Active vs Inactive users — doughnut
+    new Chart(document.getElementById('userChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Active Trekkers', 'No Bookings Yet'],
+            datasets: [{
+                data: [activeUsers, inactiveUsers],
+                backgroundColor: ['#343a40', '#dee2e6']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // Chart 3: Bookings last 7 days — line chart
+    new Chart(document.getElementById('bookingChart'), {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Bookings',
+                data: bookingCounts,
+                borderColor: '#343a40',
+                backgroundColor: 'rgba(52,58,64,0.08)',
+                tension: 0.3,
+                fill: true,
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+</script>
+{% endblock %}
