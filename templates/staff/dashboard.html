@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h4 class="mb-4">Staff Dashboard</h4>
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0">Staff Dashboard</h4>
+    <div>
+        <h4 class="mb-0">Staff Dashboard</h4>
+        <p class="text-muted mb-0" style="font-size:0.85rem;">Your assigned treks</p>
+    </div>
     <a href="{{ url_for('staff_profile') }}" class="btn btn-outline-dark btn-sm">Edit Profile</a>
 </div>
 
@@ -11,33 +13,33 @@
 <div class="row g-3">
     {% for trek in assigned_treks %}
     <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <h5 class="card-title">{{ trek.name }}</h5>
-                    <span class="badge
-                        {% if trek.status == 'Open' %}bg-success
-                        {% elif trek.status == 'Closed' %}bg-secondary
-                        {% elif trek.status == 'Completed' %}bg-dark
-                        {% else %}bg-warning text-dark{% endif %}">
-                        {{ trek.status }}
-                    </span>
-                </div>
-                <p class="text-muted mb-1">📍 {{ trek.location }}</p>
-                <p class="text-muted mb-1">⛰ {{ trek.difficulty }} · {{ trek.duration_days }} days</p>
-                <p class="mb-3">
-                    <strong>{{ trek.available_slots }}</strong> / {{ trek.total_slots }} slots available
-                </p>
-                <a href="{{ url_for('staff_trek_detail', trek_id=trek.id) }}"
-                   class="btn btn-dark btn-sm">Manage Trek</a>
+        <div class="trek-card">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h5>{{ trek.name }}</h5>
+                <span class="badge
+                    {% if trek.status == 'Open' %}bg-success
+                    {% elif trek.status == 'Started' %}bg-primary
+                    {% elif trek.status == 'Ongoing' %}bg-info text-dark
+                    {% elif trek.status == 'Closed' %}bg-secondary
+                    {% elif trek.status == 'Completed' %}bg-dark
+                    {% else %}bg-warning text-dark{% endif %}">
+                    {{ trek.status }}
+                </span>
             </div>
+            <p class="meta">📍 {{ trek.location }}</p>
+            <p class="meta">⛰ {{ trek.difficulty }} &nbsp;·&nbsp; {{ trek.duration_days }} days</p>
+            <p class="meta mb-3">
+                <strong>{{ trek.available_slots }}</strong> / {{ trek.total_slots }} slots available
+            </p>
+            <a href="{{ url_for('staff_trek_detail', trek_id=trek.id) }}"
+               class="btn btn-dark btn-sm">Manage Trek →</a>
         </div>
     </div>
     {% endfor %}
 </div>
 {% else %}
 <div class="alert alert-info">
-    You have not been assigned to any treks yet. Please wait for admin to assign you.
+    You have not been assigned to any treks yet. Please wait for the admin to assign you.
 </div>
 {% endif %}
 {% endblock %}
