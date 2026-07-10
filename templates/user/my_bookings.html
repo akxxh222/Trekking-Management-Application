@@ -5,7 +5,7 @@
     <h4 class="mb-0">My Bookings</h4>
     <a href="{{ url_for('user_treks') }}" class="btn btn-dark btn-sm">Browse More Treks</a>
 </div>
-
+<div class="table-responsive">
 <table class="table table-bordered bg-white">
     <thead class="table-dark">
         <tr>
@@ -58,4 +58,5 @@
         {% endfor %}
     </tbody>
 </table>
+</div>
 {% endblock %}

@@ -31,29 +31,27 @@
 {% if treks %}
 <div class="row g-3">
     {% for trek in treks %}
-    <div class="col-md-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <h5 class="card-title">{{ trek.name }}</h5>
-                    <span class="badge bg-success">Open</span>
-                </div>
-                <p class="text-muted mb-1">📍 {{ trek.location }}</p>
-                <p class="text-muted mb-1">⛰ {{ trek.difficulty }} · {{ trek.duration_days }} days</p>
-                <p class="mb-3">
-                    <strong>{{ trek.available_slots }}</strong> slots remaining
-                </p>
-
-                {% if trek.id in booked_trek_ids %}
-                    <span class="badge bg-secondary p-2">Already Booked</span>
-                {% elif trek.available_slots == 0 %}
-                    <span class="badge bg-danger p-2">Full</span>
-                {% else %}
-                    <a href="{{ url_for('book_trek', trek_id=trek.id) }}"
-                       class="btn btn-dark btn-sm"
-                       onclick="return confirm('Book {{ trek.name }}?')">Book Now</a>
-                {% endif %}
+    <div class="col-md-6 col-lg-4">
+        <div class="trek-card">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h5>{{ trek.name }}</h5>
+                <span class="badge bg-success">Open</span>
             </div>
+            <p class="meta">📍 {{ trek.location }}</p>
+            <p class="meta">⛰ {{ trek.difficulty }} &nbsp;·&nbsp; {{ trek.duration_days }} days</p>
+            <p class="meta mb-3">
+                <strong>{{ trek.available_slots }}</strong> slots remaining
+            </p>
+
+            {% if trek.id in booked_trek_ids %}
+                <span class="badge bg-secondary p-2">Already Booked</span>
+            {% elif trek.available_slots == 0 %}
+                <span class="badge bg-danger p-2">Full</span>
+            {% else %}
+                <a href="{{ url_for('book_trek', trek_id=trek.id) }}"
+                   class="btn btn-dark btn-sm"
+                   onclick="return confirm('Book {{ trek.name }}?')">Book Now</a>
+            {% endif %}
         </div>
     </div>
     {% endfor %}
