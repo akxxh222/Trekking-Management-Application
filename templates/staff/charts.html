@@ -42,7 +42,7 @@
             datasets: [{
                 label: 'Participants',
                 data: participantCounts,
-                backgroundColor: '#343a40',
+                backgroundColor: '#60a5fa',
                 borderRadius: 4
             }]
         },
@@ -50,7 +50,10 @@
             indexAxis: 'y',
             responsive: true,
             plugins: { legend: { display: false } },
-            scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            scales: {
+                x: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#334155' } },
+                y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
+            }
         }
     });
 
@@ -61,7 +64,7 @@
             labels: trekNames,
             datasets: [{
                 data: slotRemaining,
-                backgroundColor: ['#343a40', '#6c757d', '#adb5bd', '#dee2e6']
+                backgroundColor: ['#60a5fa', '#4ade80', '#fb923c', '#a78bfa']
             }]
         },
         options: {

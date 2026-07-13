@@ -36,7 +36,7 @@
                 <form method="POST"
                       action="{{ url_for('update_booking_status', booking_id=booking.id) }}"
                       class="d-flex gap-1">
-                    <select name="status" class="form-select form-select-sm">
+                    <select name="status" class="form-select form-select-sm booking-status-select">
                         {% for s in ['Booked', 'Cancelled', 'Completed'] %}
                         <option value="{{ s }}"
                             {% if booking.status == s %}selected{% endif %}>

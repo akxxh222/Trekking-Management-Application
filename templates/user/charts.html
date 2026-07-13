@@ -46,7 +46,7 @@
             labels: ['Active', 'Completed', 'Cancelled'],
             datasets: [{
                 data: [booked, completed, cancelled],
-                backgroundColor: ['#198754', '#343a40', '#dc3545']
+                backgroundColor: ['#4ade80', '#60a5fa', '#f87171']
             }]
         },
         options: {
@@ -63,14 +63,17 @@
             datasets: [{
                 label: 'Treks Booked',
                 data: diffCounts,
-                backgroundColor: ['#198754', '#ffc107', '#dc3545'],
+                backgroundColor: ['#4ade80', '#fb923c', '#f87171'],
                 borderRadius: 4
             }]
         },
         options: {
             responsive: true,
             plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            scales: {
+                x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                y: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#334155' } }
+            }
         }
     });
 </script>

@@ -52,14 +52,17 @@
             datasets: [{
                 label: 'Number of Treks',
                 data: trekCounts,
-                backgroundColor: '#343a40',
+                backgroundColor: '#60a5fa',
                 borderRadius: 4
             }]
         },
         options: {
             responsive: true,
             plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            scales: {
+                x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                y: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#334155' } }
+            }
         }
     });
 
@@ -70,7 +73,7 @@
             labels: ['Active Trekkers', 'No Bookings Yet'],
             datasets: [{
                 data: [activeUsers, inactiveUsers],
-                backgroundColor: ['#343a40', '#dee2e6']
+                backgroundColor: ['#60a5fa', '#334155']
             }]
         },
         options: {
@@ -89,8 +92,8 @@
             datasets: [{
                 label: 'Bookings',
                 data: bookingCounts,
-                borderColor: '#343a40',
-                backgroundColor: 'rgba(52,58,64,0.08)',
+                borderColor: '#60a5fa',
+                backgroundColor: 'rgba(96,165,250,0.15)',
                 tension: 0.3,
                 fill: true,
                 pointRadius: 4
@@ -99,7 +102,10 @@
         options: {
             responsive: true,
             plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            scales: {
+                x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
+                y: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#334155' } }
+            }
         }
     });
 </script>
