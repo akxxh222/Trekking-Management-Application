@@ -15,7 +15,7 @@ with app.app_context():
     db.create_all()
 
 
-# ─── Decorators ───────────────────────────────────────────────
+# Decorators
 
 def login_required(f):
     @wraps(f)
@@ -39,7 +39,7 @@ def role_required(role):
     return decorator
 
 
-# ─── Auth Routes ──────────────────────────────────────────────
+# Auth Routes
 
 @app.route('/')
 def home():
@@ -136,9 +136,7 @@ def logout():
     return redirect(url_for('login'))
 
 
-# ─── Dashboard Placeholder Routes ─────────────────────────────
-
-# ─── Admin Routes ─────────────────────────────────────────────
+# Admin Routes
 
 @app.route('/admin/dashboard')
 @login_required
@@ -345,7 +343,7 @@ def admin_charts():
     )
 
 
-# ─── Staff Routes ──────────────────────────────────────────────
+# Staff Routes
 
 @app.route('/staff/dashboard')
 @login_required
@@ -449,7 +447,7 @@ def staff_charts():
     )
 
 
-# ─── User Routes ───────────────────────────────────────────────
+# User Routes
 
 @app.route('/user/dashboard')
 @login_required
