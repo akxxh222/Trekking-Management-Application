@@ -34,7 +34,7 @@ cd Trekking-Management-Application
 # 2. Install dependencies
 pip install flask flask-sqlalchemy werkzeug
 
-# 3. Create the admin user (optional)
+# 3. Create the admin user
 python create_admin.py
 
 # 4. Run the application
