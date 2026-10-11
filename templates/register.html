@@ -1,52 +1,53 @@
 {% extends 'base.html' %}
 
+{% block title %}Create account · Trailhead{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-5">
+<section class="public-shell" aria-labelledby="register-title">
+    <div class="brand-panel">
+        <p class="eyebrow">Start at Trailhead</p>
+        <h1>Good journeys<br>begin prepared.</h1>
+        <p>Create a trekker account to discover routes, or join as staff to support the field team.</p>
+        <div class="trail-line" aria-hidden="true"></div>
+        <p class="brand-note">Staff access is reviewed by an administrator.</p>
+    </div>
 
-        <div class="card shadow-sm mt-5">
-            <div class="card-body p-4">
-                <h4 class="card-title mb-4 text-center">Register</h4>
-
-                <form method="POST" action="{{ url_for('register') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="mb-3">
-                        <label class="form-label" for="register-name">Full Name</label>
-                        <input type="text" id="register-name" name="name" class="form-control"
-                               value="{{ request.args.get('name', '') }}" autocomplete="name" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="register-email">Email</label>
-                        <input type="email" id="register-email" name="email" class="form-control"
-                               value="{{ request.args.get('email', '') }}" autocomplete="email" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="register-password">Password</label>
-                        <input type="password" id="register-password" name="password" class="form-control"
-                               autocomplete="new-password" minlength="8" required>
-                        <div class="form-text">Use at least 8 characters.</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="register-role">Register as</label>
-                        <select id="register-role" name="role" class="form-select" required>
-                            <option value="trekker" {% if request.args.get('role') != 'staff' %}selected{% endif %}>Trekker</option>
-                            <option value="staff" {% if request.args.get('role') == 'staff' %}selected{% endif %}>Trek Staff</option>
-                        </select>
-                    </div>
-
-                    <button type="submit" class="btn btn-dark w-100">Register</button>
-                </form>
-
-                <p class="text-center mt-3 mb-0">
-                    Already have an account?
-                    <a href="{{ url_for('login') }}">Login here</a>
-                </p>
-            </div>
+    <div class="form-panel">
+        <div class="form-heading">
+            <p class="eyebrow">Join the trail</p>
+            <h2 id="register-title">Create your account</h2>
+            <p>A few details and you are ready to begin.</p>
         </div>
 
+        <form method="POST" action="{{ url_for('register') }}" class="stack-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="field-group">
+                <label class="form-label" for="register-name">Full name</label>
+                <input type="text" id="register-name" name="name" class="form-control"
+                       value="{{ request.args.get('name', '') }}" autocomplete="name" required autofocus>
+            </div>
+            <div class="field-group">
+                <label class="form-label" for="register-email">Email address</label>
+                <input type="email" id="register-email" name="email" class="form-control"
+                       value="{{ request.args.get('email', '') }}" autocomplete="email" required>
+            </div>
+            <div class="field-group">
+                <label class="form-label" for="register-password">Password</label>
+                <input type="password" id="register-password" name="password" class="form-control"
+                       autocomplete="new-password" minlength="8" aria-describedby="password-help" required>
+                <p class="field-help" id="password-help">Use at least 8 characters.</p>
+            </div>
+            <div class="field-group">
+                <label class="form-label" for="register-role">Account type</label>
+                <select id="register-role" name="role" class="form-select" required>
+                    <option value="trekker" {% if request.args.get('role') != 'staff' %}selected{% endif %}>Trekker</option>
+                    <option value="staff" {% if request.args.get('role') == 'staff' %}selected{% endif %}>Trek staff</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Create account</button>
+        </form>
+
+        <p class="form-switch">Already have an account? <a href="{{ url_for('login') }}">Sign in</a></p>
     </div>
-</div>
+</section>
 {% endblock %}
