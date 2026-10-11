@@ -1,73 +1,21 @@
 {% extends 'base.html' %}
-
+{% block title %}{{ 'Edit trek' if trek else 'Create trek' }} · Trailhead{% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
+<header class="page-header">
+    <div><p class="eyebrow">Trek planning</p><h1>{{ 'Edit trek' if trek else 'Create a trek' }}</h1><p>{{ 'Update route details without losing occupied capacity.' if trek else 'Add the essential route and capacity details.' }}</p></div>
+    <a href="{{ url_for('admin_treks') }}" class="btn btn-quiet">Back to treks</a>
+</header>
 
-                <h4 class="mb-4">{{ 'Edit Trek' if trek else 'Create Trek' }}</h4>
-
-                <form method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="mb-3">
-                        <label class="form-label" for="trek-name">Trek Name</label>
-                        <input type="text" id="trek-name" name="name" class="form-control" required
-                               value="{{ trek.name if trek else '' }}">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="trek-location">Location</label>
-                        <input type="text" id="trek-location" name="location" class="form-control" required
-                               value="{{ trek.location if trek else '' }}">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="trek-difficulty">Difficulty</label>
-                        <select id="trek-difficulty" name="difficulty" class="form-select" required>
-                            <option value="">-- Select --</option>
-                            {% for level in ['Easy', 'Medium', 'Hard'] %}
-                            <option value="{{ level }}"
-                                {% if trek and trek.difficulty == level %}selected{% endif %}>
-                                {{ level }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="trek-duration">Duration (days)</label>
-                        <input type="number" id="trek-duration" name="duration_days" class="form-control" required min="1" step="1"
-                               value="{{ trek.duration_days if trek else '' }}">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="trek-slots">Total Slots</label>
-                        <input type="number" id="trek-slots" name="total_slots" class="form-control" required min="1" step="1"
-                               value="{{ trek.total_slots if trek else '' }}">
-                    </div>
-
-                    {% if trek %}
-                    <div class="mb-3">
-                        <label class="form-label" for="trek-status">Status</label>
-                        <select id="trek-status" name="status" class="form-select">
-                            {% for s in ['Pending', 'Open', 'Closed', 'Started', 'Ongoing', 'Completed'] %}
-                            <option value="{{ s }}" {% if trek.status == s %}selected{% endif %}>{{ s }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    {% endif %}
-
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-dark">
-                            {{ 'Update Trek' if trek else 'Create Trek' }}
-                        </button>
-                        <a href="{{ url_for('admin_treks') }}" class="btn btn-outline-secondary">Cancel</a>
-                    </div>
-                </form>
-
-            </div>
-        </div>
-    </div>
-</div>
+<section class="form-card">
+<form method="POST" class="form-grid">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field-group form-span-2"><label class="form-label" for="trek-name">Trek name</label><input type="text" id="trek-name" name="name" class="form-control" value="{{ trek.name if trek else '' }}" required></div>
+    <div class="field-group form-span-2"><label class="form-label" for="trek-location">Location</label><input type="text" id="trek-location" name="location" class="form-control" value="{{ trek.location if trek else '' }}" required></div>
+    <div class="field-group"><label class="form-label" for="trek-difficulty">Difficulty</label><select id="trek-difficulty" name="difficulty" class="form-select" required><option value="">Select difficulty</option>{% for level in ['Easy', 'Medium', 'Hard'] %}<option value="{{ level }}" {% if trek and trek.difficulty == level %}selected{% endif %}>{{ level }}</option>{% endfor %}</select></div>
+    <div class="field-group"><label class="form-label" for="trek-duration">Duration in days</label><input type="number" id="trek-duration" name="duration_days" class="form-control" min="1" step="1" value="{{ trek.duration_days if trek else '' }}" required></div>
+    <div class="field-group"><label class="form-label" for="trek-slots">Total capacity</label><input type="number" id="trek-slots" name="total_slots" class="form-control" min="1" step="1" value="{{ trek.total_slots if trek else '' }}" required></div>
+    {% if trek %}<div class="field-group"><label class="form-label" for="trek-status">Status</label><select id="trek-status" name="status" class="form-select">{% for s in ['Pending', 'Open', 'Closed', 'Started', 'Ongoing', 'Completed'] %}<option value="{{ s }}" {% if trek.status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>{% endif %}
+    <div class="form-actions form-span-2"><button type="submit" class="btn btn-primary">{{ 'Save changes' if trek else 'Create trek' }}</button><a href="{{ url_for('admin_treks') }}" class="btn btn-quiet">Cancel</a></div>
+</form>
+</section>
 {% endblock %}

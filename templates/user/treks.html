@@ -1,64 +1,17 @@
 {% extends 'base.html' %}
-
+{% block title %}Discover treks · Trailhead{% endblock %}
 {% block content %}
-<h4 class="mb-3">Available Treks</h4>
-
-<form method="GET" action="{{ url_for('user_treks') }}" class="row g-2 mb-4">
-    <div class="col-md-4">
-        <input type="text" name="search" class="form-control"
-               placeholder="Search by trek name" value="{{ search }}">
-    </div>
-    <div class="col-md-3">
-        <input type="text" name="location" class="form-control"
-               placeholder="Filter by location" value="{{ location }}">
-    </div>
-    <div class="col-md-2">
-        <select name="difficulty" class="form-select">
-            <option value="">All Difficulties</option>
-            {% for level in ['Easy', 'Medium', 'Hard'] %}
-            <option value="{{ level }}" {% if difficulty == level %}selected{% endif %}>
-                {{ level }}
-            </option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-dark">Filter</button>
-        <a href="{{ url_for('user_treks') }}" class="btn btn-outline-secondary">Clear</a>
-    </div>
+<header class="page-header"><div><p class="eyebrow">Explore</p><h1>Discover treks</h1><p>Find an open route that fits your time and pace.</p></div></header>
+<form method="GET" action="{{ url_for('user_treks') }}" class="filter-bar filter-bar-wide">
+    <div class="filter-grow"><label class="visually-hidden" for="trek-search">Trek name</label><input type="search" id="trek-search" name="search" class="form-control" placeholder="Trek name" value="{{ search }}"></div>
+    <div class="filter-grow"><label class="visually-hidden" for="location-filter">Location</label><input type="search" id="location-filter" name="location" class="form-control" placeholder="Location" value="{{ location }}"></div>
+    <div><label class="visually-hidden" for="difficulty-filter">Difficulty</label><select id="difficulty-filter" name="difficulty" class="form-select"><option value="">All difficulties</option>{% for level in ['Easy','Medium','Hard'] %}<option value="{{ level }}" {% if difficulty == level %}selected{% endif %}>{{ level }}</option>{% endfor %}</select></div>
+    <button type="submit" class="btn btn-primary">Apply filters</button>
+    {% if search or location or difficulty %}<a href="{{ url_for('user_treks') }}" class="btn btn-quiet">Clear</a>{% endif %}
 </form>
-
-{% if treks %}
-<div class="row g-3">
-    {% for trek in treks %}
-    <div class="col-md-6 col-lg-4">
-        <div class="trek-card">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-                <h5>{{ trek.name }}</h5>
-                <span class="badge bg-success">Open</span>
-            </div>
-            <p class="meta">📍 {{ trek.location }}</p>
-            <p class="meta">⛰ {{ trek.difficulty }} &nbsp;·&nbsp; {{ trek.duration_days }} days</p>
-            <p class="meta mb-3">
-                <strong>{{ trek.available_slots }}</strong> slots remaining
-            </p>
-
-            {% if trek.id in booked_trek_ids %}
-                <span class="badge bg-secondary p-2">Already Booked</span>
-            {% elif trek.available_slots == 0 %}
-                <span class="badge bg-danger p-2">Full</span>
-            {% else %}
-                <form method="POST" action="{{ url_for('book_trek', trek_id=trek.id) }}"
-                      data-confirm="Book {{ trek.name }}?">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="btn btn-dark btn-sm">Book trek</button>
-                </form>
-            {% endif %}
-        </div>
-    </div>
-    {% endfor %}
-</div>
-{% else %}
-<div class="alert alert-info">No open treks found matching your search.</div>
-{% endif %}
+<section class="collection-region" aria-label="Available treks">
+{% if treks %}<div class="collection-grid collection-grid-three">
+{% for trek in treks %}<article class="trek-card"><div class="card-heading"><div><p class="eyebrow">{{ trek.location }}</p><h2>{{ trek.name }}</h2></div><span class="difficulty-label difficulty-{{ trek.difficulty|lower }}">{{ trek.difficulty }}</span></div><dl class="detail-list"><div><dt>Duration</dt><dd>{{ trek.duration_days }} days</dd></div><div><dt>Availability</dt><dd>{{ trek.available_slots }} of {{ trek.total_slots }} places</dd></div></dl><progress class="capacity-meter" value="{{ trek.total_slots - trek.available_slots }}" max="{{ trek.total_slots }}">{{ trek.available_slots }} places remain</progress><div class="card-action">{% if trek.id in booked_trek_ids %}<span class="state-note">Booked · your place is held</span>{% elif trek.available_slots == 0 %}<span class="state-note state-note-danger">Full · no places remain</span>{% else %}<form method="POST" action="{{ url_for('book_trek', trek_id=trek.id) }}" data-confirm="Book {{ trek.name }}?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn btn-primary">Book trek</button></form>{% endif %}</div></article>{% endfor %}
+</div>{% else %}<div class="empty-state"><h2>No open treks match</h2><p>Try clearing a filter or check back when new routes open.</p>{% if search or location or difficulty %}<a href="{{ url_for('user_treks') }}" class="btn btn-quiet">Clear filters</a>{% endif %}</div>{% endif %}
+</section>
 {% endblock %}

@@ -1,45 +1,7 @@
 {% extends 'base.html' %}
-
+{% block title %}Your overview · Trailhead{% endblock %}
 {% block content %}
-<div class="mb-4">
-    <h4 class="mb-0">Welcome back, {{ user.name }}</h4>
-    <p class="text-muted mb-0" style="font-size:0.85rem;">Here's your trekking summary</p>
-</div>
-
-<div class="row g-3 mb-4">
-    <div class="col-6 col-md-4">
-        <div class="stat-card">
-            <h2>{{ total_bookings }}</h2>
-            <p>Total Bookings</p>
-        </div>
-    </div>
-    <div class="col-6 col-md-4">
-        <div class="stat-card">
-            <h2>{{ active_bookings }}</h2>
-            <p>Active Bookings</p>
-        </div>
-    </div>
-    <div class="col-6 col-md-4">
-        <div class="stat-card">
-            <h2>{{ total_bookings - active_bookings }}</h2>
-            <p>Completed / Cancelled</p>
-        </div>
-    </div>
-</div>
-
-<p class="section-title">Quick Actions</p>
-<div class="row g-3">
-    <div class="col-6 col-md-3">
-        <a href="{{ url_for('user_treks') }}" class="btn btn-dark w-100 py-3">Browse Treks</a>
-    </div>
-    <div class="col-6 col-md-3">
-        <a href="{{ url_for('my_bookings') }}" class="btn btn-dark w-100 py-3">My Bookings</a>
-    </div>
-    <div class="col-6 col-md-3">
-        <a href="{{ url_for('trekking_history') }}" class="btn btn-dark w-100 py-3">Trekking History</a>
-    </div>
-    <div class="col-6 col-md-3">
-        <a href="{{ url_for('user_profile') }}" class="btn btn-dark w-100 py-3">Edit Profile</a>
-    </div>
-</div>
+<header class="page-header"><div><p class="eyebrow">Trekker desk</p><h1>Welcome back, {{ user.name }}</h1><p>Your bookings and next trail decisions, all in one place.</p></div><a href="{{ url_for('user_treks') }}" class="btn btn-primary">Discover treks</a></header>
+<section class="metric-grid metric-grid-three" aria-label="Booking summary"><article class="stat-card"><p>All bookings</p><h2>{{ total_bookings }}</h2></article><article class="stat-card"><p>Active bookings</p><h2>{{ active_bookings }}</h2></article><article class="stat-card"><p>Past or cancelled</p><h2>{{ total_bookings - active_bookings }}</h2></article></section>
+<section aria-labelledby="next-step-title"><div class="section-heading"><div><p class="eyebrow">Next step</p><h2 id="next-step-title">Where would you like to go?</h2></div></div><div class="action-grid"><a href="{{ url_for('user_treks') }}" class="action-link"><span>Find a trek</span><small>Browse open routes by location and difficulty</small></a><a href="{{ url_for('my_bookings') }}" class="action-link"><span>Manage bookings</span><small>Review or cancel an active place</small></a><a href="{{ url_for('trekking_history') }}" class="action-link"><span>View trail history</span><small>See active and past journeys together</small></a></div></section>
 {% endblock %}

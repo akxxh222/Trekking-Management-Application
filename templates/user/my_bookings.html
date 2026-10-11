@@ -1,64 +1,8 @@
 {% extends 'base.html' %}
-
+{% block title %}Your bookings · Trailhead{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">My Bookings</h4>
-    <a href="{{ url_for('user_treks') }}" class="btn btn-dark btn-sm">Browse More Treks</a>
-</div>
-<div class="table-responsive">
-<table class="table table-bordered bg-white">
-    <thead class="table-dark">
-        <tr>
-            <th>#</th>
-            <th>Trek</th>
-            <th>Location</th>
-            <th>Booked On</th>
-            <th>Trek Status</th>
-            <th>Booking Status</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for booking in bookings %}
-        <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ booking.trek.name }}</td>
-            <td>{{ booking.trek.location }}</td>
-            <td>{{ booking.booking_date }}</td>
-            <td>
-                <span class="badge
-                    {% if booking.trek.status == 'Open' %}bg-success
-                    {% elif booking.trek.status == 'Completed' %}bg-dark
-                    {% else %}bg-secondary{% endif %}">
-                    {{ booking.trek.status }}
-                </span>
-            </td>
-            <td>
-                <span class="badge
-                    {% if booking.status == 'Booked' %}bg-success
-                    {% elif booking.status == 'Cancelled' %}bg-danger
-                    {% else %}bg-secondary{% endif %}">
-                    {{ booking.status }}
-                </span>
-            </td>
-            <td>
-                {% if booking.status == 'Booked' %}
-                <form method="POST" action="{{ url_for('cancel_booking', booking_id=booking.id) }}"
-                      data-confirm="Cancel this booking?">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Cancel booking</button>
-                </form>
-                {% else %}
-                <span class="text-muted">—</span>
-                {% endif %}
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="7" class="text-center text-muted">You have no bookings yet.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-</div>
+<header class="page-header"><div><p class="eyebrow">Your plans</p><h1>Bookings</h1><p>Places you have reserved across upcoming and past treks.</p></div><a href="{{ url_for('user_treks') }}" class="btn btn-primary">Find another trek</a></header>
+<section class="collection-region" aria-label="Your booking list">
+{% if bookings %}<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Trek</th><th>Booked</th><th>Trek status</th><th>Your booking</th><th><span class="visually-hidden">Actions</span></th></tr></thead><tbody>{% for booking in bookings %}<tr><td><strong>{{ booking.trek.name }}</strong><small class="table-note">{{ booking.trek.location }}</small></td><td>{{ booking.booking_date }}</td><td><span class="status-badge status-{{ booking.trek.status|lower }}">{{ booking.trek.status }}</span></td><td><span class="status-badge status-{{ booking.status|lower }}">{{ booking.status }}</span></td><td>{% if booking.status == 'Booked' %}<form method="POST" action="{{ url_for('cancel_booking', booking_id=booking.id) }}" data-confirm="Cancel this booking?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="btn btn-outline-danger btn-sm">Cancel booking</button></form>{% else %}<span class="table-note">No action needed</span>{% endif %}</td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="empty-state"><h2>No bookings yet</h2><p>Explore the open routes and reserve your first place.</p><a href="{{ url_for('user_treks') }}" class="btn btn-primary">Discover treks</a></div>{% endif %}
+</section>
 {% endblock %}

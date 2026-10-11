@@ -1,45 +1,18 @@
 {% extends 'base.html' %}
-
+{% block title %}Assigned treks · Trailhead{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h4 class="mb-0">Staff Dashboard</h4>
-        <p class="text-muted mb-0" style="font-size:0.85rem;">Your assigned treks</p>
-    </div>
-    <a href="{{ url_for('staff_profile') }}" class="btn btn-dark btn-sm">Edit Profile</a>
-</div>
-
+<header class="page-header"><div><p class="eyebrow">Field desk</p><h1>Assigned treks</h1><p>Routes under your care, with capacity and status at a glance.</p></div><a href="{{ url_for('staff_profile') }}" class="btn btn-quiet">Edit profile</a></header>
+<section class="collection-region" aria-label="Assigned trek list">
 {% if assigned_treks %}
-<div class="row g-3">
-    {% for trek in assigned_treks %}
-    <div class="col-md-6">
-        <div class="trek-card">
-            <div class="d-flex justify-content-between align-items-start mb-2">
-                <h5>{{ trek.name }}</h5>
-                <span class="badge
-                    {% if trek.status == 'Open' %}bg-success
-                    {% elif trek.status == 'Started' %}bg-primary
-                    {% elif trek.status == 'Ongoing' %}bg-info text-dark
-                    {% elif trek.status == 'Closed' %}bg-secondary
-                    {% elif trek.status == 'Completed' %}bg-dark
-                    {% else %}bg-warning text-dark{% endif %}">
-                    {{ trek.status }}
-                </span>
-            </div>
-            <p class="meta">📍 {{ trek.location }}</p>
-            <p class="meta">⛰ {{ trek.difficulty }} &nbsp;·&nbsp; {{ trek.duration_days }} days</p>
-            <p class="meta mb-3">
-                <strong>{{ trek.available_slots }}</strong> / {{ trek.total_slots }} slots available
-            </p>
-            <a href="{{ url_for('staff_trek_detail', trek_id=trek.id) }}"
-               class="btn btn-dark btn-sm">Manage Trek →</a>
-        </div>
-    </div>
-    {% endfor %}
+<div class="collection-grid">
+{% for trek in assigned_treks %}
+<article class="trek-card">
+    <div class="card-heading"><div><p class="eyebrow">{{ trek.location }}</p><h2>{{ trek.name }}</h2></div><span class="status-badge status-{{ trek.status|lower }}">{{ trek.status }}</span></div>
+    <dl class="detail-list"><div><dt>Difficulty</dt><dd>{{ trek.difficulty }}</dd></div><div><dt>Duration</dt><dd>{{ trek.duration_days }} days</dd></div><div><dt>Open places</dt><dd>{{ trek.available_slots }} of {{ trek.total_slots }}</dd></div></dl>
+    <a href="{{ url_for('staff_trek_detail', trek_id=trek.id) }}" class="btn btn-primary">Manage trek</a>
+</article>
+{% endfor %}
 </div>
-{% else %}
-<div class="alert alert-info">
-    You have not been assigned to any treks yet. Please wait for the admin to assign you.
-</div>
-{% endif %}
+{% else %}<div class="empty-state"><h2>No assigned treks</h2><p>Your next route will appear here after an administrator assigns it.</p><a href="{{ url_for('staff_profile') }}" class="btn btn-quiet">Check your profile</a></div>{% endif %}
+</section>
 {% endblock %}

@@ -1,111 +1,19 @@
 {% extends 'base.html' %}
-
+{% block title %}Operations insights · Trailhead{% endblock %}
 {% block content %}
-<div class="mb-4">
-    <div>
-        <h4 class="mb-0">Charts & Analytics</h4>
-        <p class="text-muted mb-0" style="font-size:0.85rem;">Overview of platform activity</p>
-    </div>
-</div>
-
-<div class="row g-4">
-
-    <div class="col-md-6">
-        <div class="trek-card">
-            <p class="section-title">Treks by Status</p>
-            <canvas id="trekStatusChart"></canvas>
-        </div>
-    </div>
-
-    <div class="col-md-6">
-        <div class="trek-card">
-            <p class="section-title">Active vs Inactive Trekkers</p>
-            <canvas id="userChart"></canvas>
-        </div>
-    </div>
-
-    <div class="col-12">
-        <div class="trek-card">
-            <p class="section-title">Bookings — Last 7 Days</p>
-            <canvas id="bookingChart"></canvas>
-        </div>
-    </div>
-
-</div>
-
+<header class="page-header"><div><p class="eyebrow">Reporting</p><h1>Operations insights</h1><p>Patterns across trek readiness, bookings, and participation.</p></div></header>
+<section class="chart-grid" aria-label="Operations charts">
+    <article class="chart-card"><div class="section-heading"><div><p class="eyebrow">Portfolio</p><h2>Treks by status</h2></div></div><canvas id="trekStatusChart" aria-label="Treks grouped by status"></canvas><p class="chart-fallback">Status totals: {{ trek_counts|join(', ') }}</p></article>
+    <article class="chart-card"><div class="section-heading"><div><p class="eyebrow">People</p><h2>Trekker activity</h2></div></div><canvas id="userActivityChart" aria-label="Active and inactive trekkers"></canvas><p class="chart-fallback">{{ active_users }} active and {{ inactive_users }} inactive trekkers.</p></article>
+    <article class="chart-card chart-wide"><div class="section-heading"><div><p class="eyebrow">Last seven days</p><h2>Booking pace</h2></div></div><canvas id="bookingChart" aria-label="Bookings over the last seven days"></canvas><p class="chart-fallback">Daily bookings: {{ booking_counts|join(', ') }}</p></article>
+</section>
+{% endblock %}
+{% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Data passed from Flask
-    const statuses = {{ statuses | tojson }};
-    const trekCounts = {{ trek_counts | tojson }};
-    const dates = {{ dates | tojson }};
-    const bookingCounts = {{ booking_counts | tojson }};
-    const activeUsers = {{ active_users }};
-    const inactiveUsers = {{ inactive_users }};
-
-    // Chart 1: Treks by status — bar chart
-    new Chart(document.getElementById('trekStatusChart'), {
-        type: 'bar',
-        data: {
-            labels: statuses,
-            datasets: [{
-                label: 'Number of Treks',
-                data: trekCounts,
-                backgroundColor: '#60a5fa',
-                borderRadius: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
-                y: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#334155' } }
-            }
-        }
-    });
-
-    // Chart 2: Active vs Inactive users — doughnut
-    new Chart(document.getElementById('userChart'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Active Trekkers', 'No Bookings Yet'],
-            datasets: [{
-                data: [activeUsers, inactiveUsers],
-                backgroundColor: ['#60a5fa', '#334155']
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { position: 'bottom' }
-            }
-        }
-    });
-
-    // Chart 3: Bookings last 7 days — line chart
-    new Chart(document.getElementById('bookingChart'), {
-        type: 'line',
-        data: {
-            labels: dates,
-            datasets: [{
-                label: 'Bookings',
-                data: bookingCounts,
-                borderColor: '#60a5fa',
-                backgroundColor: 'rgba(96,165,250,0.15)',
-                tension: 0.3,
-                fill: true,
-                pointRadius: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } },
-                y: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#334155' } }
-            }
-        }
-    });
+const chartGrid = '#d9d7cf'; const chartText = '#687067';
+new Chart(document.getElementById('trekStatusChart'), {type:'bar',data:{labels:{{ statuses|tojson }},datasets:[{data:{{ trek_counts|tojson }},backgroundColor:'#244436',borderRadius:4}]},options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:chartText}},y:{beginAtZero:true,ticks:{stepSize:1,color:chartText},grid:{color:chartGrid}}}}});
+new Chart(document.getElementById('userActivityChart'), {type:'doughnut',data:{labels:['Active','Inactive'],datasets:[{data:[{{ active_users }},{{ inactive_users }}],backgroundColor:['#244436','#d9d7cf'],borderWidth:0}]},options:{plugins:{legend:{position:'bottom',labels:{color:chartText}}}}});
+new Chart(document.getElementById('bookingChart'), {type:'line',data:{labels:{{ dates|tojson }},datasets:[{label:'Bookings',data:{{ booking_counts|tojson }},borderColor:'#a36e22',backgroundColor:'rgba(163,110,34,.12)',fill:true,tension:.25}]},options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:chartText}},y:{beginAtZero:true,ticks:{stepSize:1,color:chartText},grid:{color:chartGrid}}}}});
 </script>
 {% endblock %}

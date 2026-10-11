@@ -1,60 +1,40 @@
 {% extends 'base.html' %}
-
+{% block title %}Operations overview · Trailhead{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<header class="page-header">
     <div>
-        <h4 class="mb-0">Admin Dashboard</h4>
-        <p class="text-muted mb-0" style="font-size:0.85rem;">Overview of all activity</p>
+        <p class="eyebrow">Operations</p>
+        <h1>Overview</h1>
+        <p>A clear view of the people, treks, and bookings in motion.</p>
     </div>
-</div>
+    <a href="{{ url_for('create_trek') }}" class="btn btn-primary">Create trek</a>
+</header>
 
-<div class="row g-3 mb-4">
-    <div class="col-6 col-md-3">
-        <div class="stat-card">
-            <h2>{{ total_treks }}</h2>
-            <p>Total Treks</p>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="stat-card">
-            <h2>{{ total_users }}</h2>
-            <p>Trekkers</p>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="stat-card">
-            <h2>{{ total_staff }}</h2>
-            <p>Trek Staff</p>
-        </div>
-    </div>
-    <div class="col-6 col-md-3">
-        <div class="stat-card">
-            <h2>{{ total_bookings }}</h2>
-            <p>Bookings</p>
-        </div>
-    </div>
-</div>
+<section class="metric-grid" aria-label="Platform totals">
+    <article class="stat-card"><p>Treks</p><h2>{{ total_treks }}</h2></article>
+    <article class="stat-card"><p>Trekkers</p><h2>{{ total_users }}</h2></article>
+    <article class="stat-card"><p>Field staff</p><h2>{{ total_staff }}</h2></article>
+    <article class="stat-card"><p>Bookings</p><h2>{{ total_bookings }}</h2></article>
+</section>
 
 {% if pending_staff > 0 %}
-<div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
-    <span>⚠</span>
-    <span>
-        {{ pending_staff }} staff account(s) pending approval.
-        <a href="{{ url_for('admin_users') }}" class="alert-link ms-1">Review now →</a>
-    </span>
-</div>
+<aside class="attention-panel" aria-label="Pending staff reviews">
+    <div>
+        <p class="eyebrow">Needs attention</p>
+        <h2>{{ pending_staff }} staff {{ 'account' if pending_staff == 1 else 'accounts' }} waiting for review</h2>
+    </div>
+    <a href="{{ url_for('admin_users') }}" class="btn btn-quiet">Review people</a>
+</aside>
 {% endif %}
 
-<p class="section-title">Quick Actions</p>
-<div class="row g-3">
-    <div class="col-md-4">
-        <a href="{{ url_for('admin_treks') }}" class="btn btn-dark w-100 py-3">Manage Treks</a>
+<section aria-labelledby="quick-actions-title">
+    <div class="section-heading">
+        <div><p class="eyebrow">Shortcuts</p><h2 id="quick-actions-title">Keep operations moving</h2></div>
     </div>
-    <div class="col-md-4">
-        <a href="{{ url_for('admin_users') }}" class="btn btn-dark w-100 py-3">Manage Users & Staff</a>
+    <div class="action-grid">
+        <a href="{{ url_for('admin_treks') }}" class="action-link"><span>Manage treks</span><small>Schedules, capacity, status, and staff</small></a>
+        <a href="{{ url_for('admin_users') }}" class="action-link"><span>Manage people</span><small>Approvals and account access</small></a>
+        <a href="{{ url_for('admin_bookings') }}" class="action-link"><span>Review bookings</span><small>Participant and booking status</small></a>
     </div>
-    <div class="col-md-4">
-        <a href="{{ url_for('admin_bookings') }}" class="btn btn-dark w-100 py-3">View All Bookings</a>
-    </div>
-</div>
+</section>
 {% endblock %}

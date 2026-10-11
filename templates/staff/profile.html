@@ -1,40 +1,6 @@
 {% extends 'base.html' %}
-
+{% block title %}Profile · Trailhead{% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-5">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h4 class="mb-4">Edit Profile</h4>
-
-                <form method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div class="mb-3">
-                        <label class="form-label" for="staff-name">Full Name</label>
-                        <input type="text" id="staff-name" name="name" class="form-control"
-                               value="{{ user.name }}" autocomplete="name" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="staff-email">Email</label>
-                        <input type="email" id="staff-email" class="form-control"
-                               value="{{ user.email }}" disabled>
-                        <div class="form-text">Email cannot be changed.</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label" for="staff-password">New Password</label>
-                        <input type="password" id="staff-password" name="password" class="form-control"
-                               autocomplete="new-password" minlength="8"
-                               placeholder="Leave blank to keep current password">
-                        <div class="form-text">Use at least 8 characters if changing it.</div>
-                    </div>
-
-                    <button type="submit" class="btn btn-dark">Save Changes</button>
-                    <a href="{{ url_for('staff_dashboard') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+<header class="page-header"><div><p class="eyebrow">Account</p><h1>Your profile</h1><p>Keep your field identity and sign-in details current.</p></div><a href="{{ url_for('staff_dashboard') }}" class="btn btn-quiet">Back to assigned treks</a></header>
+<section class="form-card form-card-narrow"><form method="POST" class="stack-form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="field-group"><label class="form-label" for="staff-name">Full name</label><input type="text" id="staff-name" name="name" class="form-control" value="{{ user.name }}" autocomplete="name" required></div><div class="field-group"><label class="form-label" for="staff-email">Email address</label><input type="email" id="staff-email" class="form-control" value="{{ user.email }}" disabled><p class="field-help">Email cannot be changed.</p></div><div class="field-group"><label class="form-label" for="staff-password">New password</label><input type="password" id="staff-password" name="password" class="form-control" autocomplete="new-password" minlength="8" aria-describedby="staff-password-help"><p class="field-help" id="staff-password-help">Leave blank to keep your current password; new passwords need 8 characters.</p></div><div class="form-actions"><button type="submit" class="btn btn-primary">Save profile</button><a href="{{ url_for('staff_dashboard') }}" class="btn btn-quiet">Cancel</a></div></form></section>
 {% endblock %}

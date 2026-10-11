@@ -1,102 +1,18 @@
 {% extends 'base.html' %}
-
+{% block title %}{{ trek.name }} · Trailhead{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">{{ trek.name }}</h4>
-    <a href="{{ url_for('staff_dashboard') }}" class="btn btn-outline-secondary btn-sm">← Back</a>
-</div>
+<header class="page-header"><div><p class="eyebrow">{{ trek.location }}</p><h1>{{ trek.name }}</h1><p>{{ trek.difficulty }} route · {{ trek.duration_days }} days</p></div><a href="{{ url_for('staff_dashboard') }}" class="btn btn-quiet">Back to assigned treks</a></header>
+<section class="metric-grid metric-grid-compact" aria-label="Trek summary"><article class="metric-card"><p>Available places</p><h3>{{ trek.available_slots }}</h3></article><article class="metric-card"><p>Registered trekkers</p><h3>{{ bookings|length }}</h3></article><article class="metric-card"><p>Difficulty</p><h3>{{ trek.difficulty }}</h3></article><article class="metric-card"><p>Current status</p><h3>{{ trek.status }}</h3></article></section>
 
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="metric-card text-center p-3 border-0">
-            <h3 class="fw-bold">{{ trek.available_slots }}</h3>
-            <p class="text-muted mb-0">Available Slots</p>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="metric-card text-center p-3 border-0">
-            <h3 class="fw-bold">{{ bookings|length }}</h3>
-            <p class="text-muted mb-0">Registered Trekkers</p>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="metric-card text-center p-3 border-0">
-            <h3 class="fw-bold">{{ trek.difficulty }}</h3>
-            <p class="text-muted mb-0">Difficulty</p>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="metric-card text-center p-3 border-0">
-            <h3 class="fw-bold">{{ trek.duration_days }}</h3>
-            <p class="text-muted mb-0">Duration (days)</p>
-        </div>
-    </div>
-</div>
+<section class="form-card section-block" aria-labelledby="update-trek-title"><div class="section-heading"><div><p class="eyebrow">Field update</p><h2 id="update-trek-title">Update trek</h2></div></div>
+<form method="POST" action="{{ url_for('staff_update_trek', trek_id=trek.id) }}" class="form-grid form-grid-compact">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field-group"><label class="form-label" for="trek-status">Status</label><select id="trek-status" name="status" class="form-select" {% if trek.status == 'Completed' %}disabled{% endif %}>{% for s in ['Pending','Open','Closed','Started','Ongoing','Completed'] %}<option value="{{ s }}" {% if trek.status == s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>{% if trek.status == 'Completed' %}<input type="hidden" name="status" value="Completed"><p class="field-help">Completed treks stay closed.</p>{% endif %}</div>
+    <div class="field-group"><label class="form-label" for="available-slots">Available places</label><input type="number" id="available-slots" name="available_slots" class="form-control" value="{{ trek.available_slots }}" min="0" max="{{ trek.total_slots }}" step="1" required></div>
+    <div class="form-actions"><button type="submit" class="btn btn-primary">Save update</button></div>
+</form></section>
 
-<div class="card mb-4">
-    <div class="card-body">
-        <h5 class="card-title">Update Trek</h5>
-        <form method="POST" action="{{ url_for('staff_update_trek', trek_id=trek.id) }}"
-              class="d-flex gap-3 align-items-end flex-wrap">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-            <div>
-                <label class="form-label" for="trek-status">Status</label>
-                <select id="trek-status" name="status" class="form-select" {% if trek.status == 'Completed' %}disabled{% endif %}>
-                    {% for s in ['Pending', 'Open', 'Closed', 'Started', 'Ongoing', 'Completed'] %}
-                    <option value="{{ s }}" {% if trek.status == s %}selected{% endif %}>{{ s }}</option>
-                    {% endfor %}
-                </select>
-                {% if trek.status == 'Completed' %}
-                <input type="hidden" name="status" value="Completed">
-                {% endif %}
-            </div>
-
-            <div>
-                <label class="form-label" for="available-slots">Available Slots</label>
-                <input type="number" id="available-slots" name="available_slots" class="form-control"
-                       value="{{ trek.available_slots }}" min="0" max="{{ trek.total_slots }}" step="1">
-            </div>
-
-            <button type="submit" class="btn btn-dark">Update</button>
-        </form>
-    </div>
-</div>
-
-<h5 class="mb-3">Registered Trekkers</h5>
-<div class="table-responsive">
-<table class="table table-bordered bg-white">
-    <thead class="table-dark">
-        <tr>
-            <th>#</th>
-            <th>Trekker Name</th>
-            <th>Booking Date</th>
-            <th>Status</th>
-            <th>Payment</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for booking in bookings %}
-        <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ booking.trekker.name }}</td>
-            <td>{{ booking.booking_date }}</td>
-            <td>
-                <span class="badge
-                    {% if booking.status == 'Booked' %}bg-success
-                    {% elif booking.status == 'Cancelled' %}bg-danger
-                    {% else %}bg-secondary{% endif %}">
-                    {{ booking.status }}
-                </span>
-            </td>
-            <td>{{ booking.payment_status }}</td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="5" class="text-center text-muted">No trekkers registered yet.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-</div>
+<section class="collection-region section-block" aria-labelledby="participants-title"><div class="section-heading"><div><p class="eyebrow">Manifest</p><h2 id="participants-title">Registered trekkers</h2></div></div>
+{% if bookings %}<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Trekker</th><th>Booked</th><th>Booking</th><th>Payment</th></tr></thead><tbody>{% for booking in bookings %}<tr><td><strong>{{ booking.trekker.name }}</strong></td><td>{{ booking.booking_date }}</td><td><span class="status-badge status-{{ booking.status|lower }}">{{ booking.status }}</span></td><td>{{ booking.payment_status }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<div class="empty-state"><h2>No trekkers registered yet</h2><p>The participant manifest will populate as bookings arrive.</p></div>{% endif %}
+</section>
 {% endblock %}

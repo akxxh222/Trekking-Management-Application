@@ -1,5 +1,7 @@
 import re
 
+import pytest
+
 
 def rendered(client, path):
     response = client.get(path)
@@ -78,3 +80,98 @@ def test_registration_uses_public_brand_and_form_panels_with_complete_labels(cli
     ):
         assert f'for="{control_id}"' in page
     assert 'name="csrf_token"' in page
+
+
+@pytest.mark.parametrize(
+    ("role", "path"),
+    [
+        ("admin", "/admin/dashboard"),
+        ("admin", "/admin/treks"),
+        ("admin", "/admin/trek/create"),
+        ("admin", "/admin/users"),
+        ("admin", "/admin/bookings"),
+        ("admin", "/admin/charts"),
+        ("staff", "/staff/dashboard"),
+        ("staff", "/staff/profile"),
+        ("staff", "/staff/charts"),
+        ("trekker", "/user/dashboard"),
+        ("trekker", "/user/treks"),
+        ("trekker", "/user/bookings"),
+        ("trekker", "/user/profile"),
+        ("trekker", "/user/history"),
+        ("trekker", "/user/charts"),
+    ],
+)
+def test_role_pages_use_consistent_clean_page_header(
+    client, seeded_users, login_as, role, path
+):
+    login_as(seeded_users[role])
+
+    page = rendered(client, path)
+
+    assert '<header class="page-header"' in page
+    assert re.search(r'<h1(?:\s[^>]*)?>[^<]+</h1>', page)
+    assert re.search(r"\sstyle\s*=", page, re.IGNORECASE) is None
+    assert re.search(r"\sonclick\s*=", page, re.IGNORECASE) is None
+    assert not any(marker in page for marker in ("â", "ð", "�"))
+    assert re.search(r"[\u2600-\u27bf\U0001f300-\U0001faff]", page) is None
+
+
+def test_detail_and_edit_pages_follow_page_contract(
+    client, seeded_users, login_as, trek
+):
+    for role, path in (
+        ("admin", f"/admin/trek/edit/{trek.id}"),
+        ("staff", f"/staff/trek/{trek.id}"),
+    ):
+        login_as(seeded_users[role])
+        page = rendered(client, path)
+        assert '<header class="page-header"' in page
+        assert re.search(r'<h1(?:\s[^>]*)?>[^<]+</h1>', page)
+        assert re.search(r"\sstyle\s*=", page, re.IGNORECASE) is None
+        assert re.search(r"\sonclick\s*=", page, re.IGNORECASE) is None
+
+
+@pytest.mark.parametrize(
+    ("role", "path"),
+    [
+        ("admin", "/admin/treks"),
+        ("admin", "/admin/users"),
+        ("admin", "/admin/bookings"),
+        ("staff", "/staff/dashboard"),
+        ("trekker", "/user/treks"),
+        ("trekker", "/user/bookings"),
+        ("trekker", "/user/history"),
+    ],
+)
+def test_collection_pages_provide_responsive_collection_region(
+    client, seeded_users, login_as, role, path
+):
+    login_as(seeded_users[role])
+
+    page = rendered(client, path)
+
+    assert 'class="collection-region' in page
+
+
+@pytest.mark.parametrize(
+    ("role", "path"),
+    [
+        ("admin", "/admin/treks"),
+        ("admin", "/admin/bookings"),
+        ("staff", "/staff/dashboard"),
+        ("staff", "/staff/charts"),
+        ("trekker", "/user/treks"),
+        ("trekker", "/user/bookings"),
+        ("trekker", "/user/history"),
+        ("trekker", "/user/charts"),
+    ],
+)
+def test_empty_collections_offer_useful_empty_state(
+    client, seeded_users, login_as, role, path
+):
+    login_as(seeded_users[role])
+
+    page = rendered(client, path)
+
+    assert 'class="empty-state"' in page

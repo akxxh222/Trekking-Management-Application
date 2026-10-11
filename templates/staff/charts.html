@@ -1,80 +1,14 @@
 {% extends 'base.html' %}
-
+{% block title %}Field insights · Trailhead{% endblock %}
 {% block content %}
-<div class="mb-4">
-    <div>
-        <h4 class="mb-0">Trek Analytics</h4>
-        <p class="text-muted mb-0" style="font-size:0.85rem;">Participant data for your assigned treks</p>
-    </div>
-</div>
-
+<header class="page-header"><div><p class="eyebrow">Reporting</p><h1>Field insights</h1><p>Participation and remaining capacity across your assigned routes.</p></div></header>
 {% if trek_names %}
-<div class="row g-4">
-
-    <div class="col-md-7">
-        <div class="trek-card">
-            <p class="section-title">Participants per Trek</p>
-            <canvas id="participantChart"></canvas>
-        </div>
-    </div>
-
-    <div class="col-md-5">
-        <div class="trek-card">
-            <p class="section-title">Slots Remaining per Trek</p>
-            <canvas id="slotsChart"></canvas>
-        </div>
-    </div>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const trekNames = {{ trek_names | tojson }};
-    const participantCounts = {{ participant_counts | tojson }};
-    const slotRemaining = {{ slot_remaining | tojson }};
-
-    // Chart 1: Participants per trek — horizontal bar
-    new Chart(document.getElementById('participantChart'), {
-        type: 'bar',
-        data: {
-            labels: trekNames,
-            datasets: [{
-                label: 'Participants',
-                data: participantCounts,
-                backgroundColor: '#60a5fa',
-                borderRadius: 4
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: '#334155' } },
-                y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } }
-            }
-        }
-    });
-
-    // Chart 2: Slots remaining — doughnut per trek
-    new Chart(document.getElementById('slotsChart'), {
-        type: 'doughnut',
-        data: {
-            labels: trekNames,
-            datasets: [{
-                data: slotRemaining,
-                backgroundColor: ['#60a5fa', '#4ade80', '#fb923c', '#a78bfa']
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { position: 'bottom' } }
-        }
-    });
-</script>
-
-{% else %}
-<div class="alert alert-info">No treks assigned yet. Charts will appear once you are assigned to treks.</div>
-{% endif %}
-
+<section class="chart-grid" aria-label="Assigned trek charts"><article class="chart-card"><div class="section-heading"><div><p class="eyebrow">Participation</p><h2>Registered trekkers</h2></div></div><canvas id="participantChart" aria-label="Registered trekkers per assigned trek"></canvas><p class="chart-fallback">Participants: {{ participant_counts|join(', ') }}</p></article><article class="chart-card"><div class="section-heading"><div><p class="eyebrow">Capacity</p><h2>Places remaining</h2></div></div><canvas id="slotChart" aria-label="Available places per assigned trek"></canvas><p class="chart-fallback">Open places: {{ slot_remaining|join(', ') }}</p></article></section>
+{% else %}<div class="empty-state"><h2>No field data yet</h2><p>Insights will appear once you have an assigned trek.</p><a href="{{ url_for('staff_dashboard') }}" class="btn btn-quiet">View assignments</a></div>{% endif %}
 {% endblock %}
+{% block scripts %}{% if trek_names %}<script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>
+const staffLabels={{ trek_names|tojson }}; const grid='#d9d7cf'; const text='#687067';
+const axes={x:{grid:{display:false},ticks:{color:text}},y:{beginAtZero:true,ticks:{stepSize:1,color:text},grid:{color:grid}}};
+new Chart(document.getElementById('participantChart'),{type:'bar',data:{labels:staffLabels,datasets:[{data:{{ participant_counts|tojson }},backgroundColor:'#244436',borderRadius:4}]},options:{plugins:{legend:{display:false}},scales:axes}});
+new Chart(document.getElementById('slotChart'),{type:'bar',data:{labels:staffLabels,datasets:[{data:{{ slot_remaining|tojson }},backgroundColor:'#a36e22',borderRadius:4}]},options:{plugins:{legend:{display:false}},scales:axes}});
+</script>{% endif %}{% endblock %}

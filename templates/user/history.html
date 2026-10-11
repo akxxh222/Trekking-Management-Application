@@ -1,86 +1,10 @@
 {% extends 'base.html' %}
-
+{% block title %}Trail history · Trailhead{% endblock %}
 {% block content %}
-<h4 class="mb-4">Trekking History</h4>
-
-<h5 class="mb-3">Active Bookings</h5>
-<div class="table-responsive">
-<table class="table table-bordered bg-white mb-5">
-    <thead class="table-dark">
-        <tr>
-            <th>#</th>
-            <th>Trek</th>
-            <th>Location</th>
-            <th>Difficulty</th>
-            <th>Booked On</th>
-            <th>Trek Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for booking in active %}
-        <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ booking.trek.name }}</td>
-            <td>{{ booking.trek.location }}</td>
-            <td>{{ booking.trek.difficulty }}</td>
-            <td>{{ booking.booking_date }}</td>
-            <td>
-                <span class="badge
-                    {% if booking.trek.status == 'Open' %}bg-success
-                    {% elif booking.trek.status == 'Started' %}bg-primary
-                    {% elif booking.trek.status == 'Ongoing' %}bg-info text-dark
-                    {% elif booking.trek.status == 'Completed' %}bg-dark
-                    {% else %}bg-secondary{% endif %}">
-                    {{ booking.trek.status }}
-                </span>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="6" class="text-center text-muted">No active bookings.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-</div>
-
-<h5 class="mb-3">Past Treks</h5>
-<div class="table-responsive">
-<table class="table table-bordered bg-white">
-    <thead class="table-dark">
-        <tr>
-            <th>#</th>
-            <th>Trek</th>
-            <th>Location</th>
-            <th>Difficulty</th>
-            <th>Duration</th>
-            <th>Booked On</th>
-            <th>Booking Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for booking in past %}
-        <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ booking.trek.name }}</td>
-            <td>{{ booking.trek.location }}</td>
-            <td>{{ booking.trek.difficulty }}</td>
-            <td>{{ booking.trek.duration_days }} days</td>
-            <td>{{ booking.booking_date }}</td>
-            <td>
-                <span class="badge
-                    {% if booking.status == 'Completed' %}bg-dark
-                    {% else %}bg-danger{% endif %}">
-                    {{ booking.status }}
-                </span>
-            </td>
-        </tr>
-        {% else %}
-        <tr>
-            <td colspan="7" class="text-center text-muted">No past treks yet.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-</div>
+<header class="page-header"><div><p class="eyebrow">Your record</p><h1>Trail history</h1><p>Active plans and the routes already behind you.</p></div></header>
+<section class="collection-region" aria-label="Trekking history">
+{% if not active and not past %}<div class="empty-state"><h2>No trail history yet</h2><p>Your active and past treks will appear after your first booking.</p><a href="{{ url_for('user_treks') }}" class="btn btn-primary">Discover treks</a></div>{% else %}
+{% if active %}<div class="section-heading"><div><p class="eyebrow">Ahead</p><h2>Active bookings</h2></div></div><div class="table-responsive section-table"><table class="table align-middle"><thead><tr><th>Trek</th><th>Difficulty</th><th>Booked</th><th>Trek status</th></tr></thead><tbody>{% for booking in active %}<tr><td><strong>{{ booking.trek.name }}</strong><small class="table-note">{{ booking.trek.location }}</small></td><td>{{ booking.trek.difficulty }}</td><td>{{ booking.booking_date }}</td><td><span class="status-badge status-{{ booking.trek.status|lower }}">{{ booking.trek.status }}</span></td></tr>{% endfor %}</tbody></table></div>{% endif %}
+{% if past %}<div class="section-heading section-block"><div><p class="eyebrow">Archive</p><h2>Past treks</h2></div></div><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Trek</th><th>Difficulty</th><th>Duration</th><th>Booked</th><th>Result</th></tr></thead><tbody>{% for booking in past %}<tr><td><strong>{{ booking.trek.name }}</strong><small class="table-note">{{ booking.trek.location }}</small></td><td>{{ booking.trek.difficulty }}</td><td>{{ booking.trek.duration_days }} days</td><td>{{ booking.booking_date }}</td><td><span class="status-badge status-{{ booking.status|lower }}">{{ booking.status }}</span></td></tr>{% endfor %}</tbody></table></div>{% endif %}
+{% endif %}</section>
 {% endblock %}
