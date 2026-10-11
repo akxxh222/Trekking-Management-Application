@@ -30,7 +30,7 @@ def csrf_token():
 app.jinja_env.globals['csrf_token'] = csrf_token
 
 TREK_DIFFICULTIES = ('Easy', 'Medium', 'Hard')
-TREK_STATUSES = ('Pending', 'Open', 'Closed', 'Started', 'Ongoing', 'Completed')
+TREK_STATUSES = ('Pending', 'Open', 'Closed', 'Ongoing', 'Completed')
 BOOKING_STATUSES = ('Booked', 'Cancelled', 'Completed')
 
 
@@ -522,7 +522,7 @@ def update_booking_status(booking_id):
 @role_required('admin')
 def admin_charts():
     # Total treks by status
-    statuses = ['Pending', 'Open', 'Closed', 'Started', 'Ongoing', 'Completed']
+    statuses = ['Pending', 'Open', 'Closed', 'Ongoing', 'Completed']
     trek_counts = [Trek.query.filter_by(status=s).count() for s in statuses]
 
     # Bookings per day (last 7 days)

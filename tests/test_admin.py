@@ -72,19 +72,34 @@ def test_created_trek_is_open_by_default(client, seeded_users, login_as):
     assert created.available_slots == created.total_slots
 
 
-def test_edit_trek_rejects_invalid_status(client, seeded_users, login_as, trek):
+@pytest.mark.parametrize("invalid_status", ["Archived", "Started"])
+def test_edit_trek_rejects_invalid_status(
+    client, seeded_users, login_as, trek, invalid_status
+):
     response = admin_post(
         client,
         login_as,
         seeded_users["admin"],
         f"/admin/trek/edit/{trek.id}",
-        valid_trek_data(status="Archived"),
+        valid_trek_data(status=invalid_status),
         follow_redirects=True,
     )
 
     db.session.refresh(trek)
     assert "status" in response.get_data(as_text=True).lower()
     assert trek.status == "Open"
+
+
+def test_started_status_is_not_offered_in_admin_workflows(
+    client, seeded_users, login_as, trek
+):
+    login_as(seeded_users["admin"])
+
+    edit_page = client.get(f"/admin/trek/edit/{trek.id}").get_data(as_text=True)
+    charts_page = client.get("/admin/charts").get_data(as_text=True)
+
+    assert ">Started<" not in edit_page
+    assert '"Started"' not in charts_page
 
 
 def test_capacity_growth_preserves_occupied_slots(

@@ -333,7 +333,6 @@ a:hover { color: var(--color-primary-hover); }
 .status-pending { background: var(--color-accent-soft); color: #704a15; }
 .status-cancelled,
 .status-closed { background: var(--color-danger-soft); color: var(--color-danger); }
-.status-started,
 .status-ongoing { background: #e1ebef; color: var(--color-info); }
 .status-completed { background: #e7e7e2; color: #4d544d; }
 .difficulty-easy { background: var(--color-primary-soft); color: var(--color-primary); }

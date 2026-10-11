@@ -72,6 +72,16 @@ def test_staff_rejects_unsupported_status(
     assert trek.available_slots == 12
 
 
+def test_started_status_is_not_offered_to_staff(
+    client, seeded_users, login_as, trek
+):
+    login_as(seeded_users["staff"])
+
+    page = client.get(f"/staff/trek/{trek.id}").get_data(as_text=True)
+
+    assert ">Started<" not in page
+
+
 @pytest.mark.parametrize(
     ("slots", "message"),
     [("many", "whole number"), ("-1", "zero"), ("13", "total")],
