@@ -30,6 +30,8 @@ def test_shared_assets_expose_responsive_accessible_design_system(client):
     assert ":focus-visible" in stylesheet
     assert "prefers-reduced-motion" in stylesheet
     assert "max-width: 420px" in stylesheet
+    assert "gradient(" not in stylesheet.lower()
+    assert "backdrop-filter" not in stylesheet.lower()
     assert script.status_code == 200
     assert "data-confirm" in script.get_data(as_text=True)
 

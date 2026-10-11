@@ -155,6 +155,23 @@ def test_login_rejects_unavailable_accounts(
         assert "user_id" not in session
 
 
+def test_existing_session_is_revoked_when_account_is_deactivated(
+    client, seeded_users, login_as
+):
+    user = seeded_users["trekker"]
+    login_as(user)
+    user.is_active = False
+    db.session.commit()
+
+    response = client.get("/user/dashboard", follow_redirects=True)
+
+    page = response.get_data(as_text=True).lower()
+    assert "sign in" in page
+    assert "no longer available" in page
+    with client.session_transaction() as session:
+        assert "user_id" not in session
+
+
 @pytest.mark.parametrize(
     ("role", "path"),
     [

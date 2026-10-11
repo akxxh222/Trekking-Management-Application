@@ -221,3 +221,33 @@ def test_admin_reactivation_requires_available_slot(
     assert "available slot" in response.get_data(as_text=True).lower()
     assert booking.status == "Cancelled"
     assert trek.available_slots == 0
+
+
+def test_admin_cannot_reactivate_duplicate_booking(
+    client, seeded_users, login_as, booking, trek
+):
+    booking.status = "Cancelled"
+    duplicate = Booking(
+        user_id=booking.user_id,
+        trek_id=booking.trek_id,
+        booking_date=booking.booking_date,
+        status="Booked",
+        payment_status="Paid",
+    )
+    db.session.add(duplicate)
+    db.session.commit()
+
+    response = post_as(
+        client,
+        login_as,
+        seeded_users["admin"],
+        f"/admin/booking/update/{booking.id}",
+        {"status": "Booked"},
+        follow_redirects=True,
+    )
+
+    db.session.refresh(booking)
+    db.session.refresh(trek)
+    assert "already has an active booking" in response.get_data(as_text=True).lower()
+    assert booking.status == "Cancelled"
+    assert trek.available_slots == 11

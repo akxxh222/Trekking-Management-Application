@@ -149,6 +149,16 @@ def transition_booking_status(booking, new_status):
         return None
 
     trek = booking.trek
+    if booking.status == 'Cancelled' and new_status != 'Cancelled':
+        existing_booking = Booking.query.filter(
+            Booking.id != booking.id,
+            Booking.user_id == booking.user_id,
+            Booking.trek_id == booking.trek_id,
+            Booking.status != 'Cancelled',
+        ).first()
+        if existing_booking:
+            return 'This trekker already has an active booking for this trek.'
+
     if booking.status != 'Cancelled' and new_status == 'Cancelled':
         if trek.available_slots >= trek.total_slots:
             return 'Trek capacity is already fully available.'
@@ -186,6 +196,20 @@ def login_required(f):
         if 'user_id' not in session:
             flash('Please login first.')
             return redirect(url_for('login'))
+
+        user = db.session.get(User, session['user_id'])
+        account_unavailable = (
+            user is None
+            or not user.is_active
+            or (user.role == 'staff' and not user.is_approved)
+        )
+        if account_unavailable:
+            session.clear()
+            flash('Your account is no longer available. Please contact an administrator.')
+            return redirect(url_for('login'))
+
+        session['role'] = user.role
+        session['name'] = user.name
         return f(*args, **kwargs)
     return decorated
 

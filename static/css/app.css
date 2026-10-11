@@ -49,9 +49,8 @@ a:hover { color: var(--color-primary-hover); }
     position: sticky;
     top: 0;
     z-index: 100;
-    background: rgba(244, 242, 236, 0.96);
+    background: var(--color-canvas);
     border-bottom: 1px solid var(--color-border);
-    backdrop-filter: blur(12px);
 }
 
 .navbar { min-height: 4.5rem; padding-block: 0.65rem; }

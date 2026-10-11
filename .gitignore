@@ -1,2 +1,8 @@
 __pycache__/
 instance/
+.worktrees/
+.pytest_cache/
+.venv/
+venv/
+*.py[cod]
+.env
