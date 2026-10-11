@@ -54,6 +54,24 @@ def test_create_trek_rejects_invalid_input(
     assert Trek.query.count() == 0
 
 
+def test_created_trek_is_open_by_default(client, seeded_users, login_as):
+    form_data = valid_trek_data()
+    form_data.pop("status")
+
+    response = admin_post(
+        client,
+        login_as,
+        seeded_users["admin"],
+        "/admin/trek/create",
+        form_data,
+    )
+
+    created = Trek.query.one()
+    assert response.status_code == 302
+    assert created.status == "Open"
+    assert created.available_slots == created.total_slots
+
+
 def test_edit_trek_rejects_invalid_status(client, seeded_users, login_as, trek):
     response = admin_post(
         client,

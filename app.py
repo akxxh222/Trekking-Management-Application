@@ -121,7 +121,7 @@ def validate_trek_form(form, trek=None):
     if error:
         return None, error
 
-    status = 'Pending'
+    status = 'Open'
     occupied_slots = 0
     if trek is not None:
         status = form.get('status') or ''
