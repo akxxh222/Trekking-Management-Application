@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}{{ trek.name }} · Trailhead{% endblock %}
+{% block title %}{{ trek.name }} · TrekSphere{% endblock %}
 {% block content %}
 <header class="page-header"><div><p class="eyebrow">{{ trek.location }}</p><h1>{{ trek.name }}</h1><p>{{ trek.difficulty }} route · {{ trek.duration_days }} days</p></div><a href="{{ url_for('staff_dashboard') }}" class="btn btn-quiet">Back to assigned treks</a></header>
 <section class="metric-grid metric-grid-compact" aria-label="Trek summary"><article class="metric-card"><p>Available places</p><h3>{{ trek.available_slots }}</h3></article><article class="metric-card"><p>Registered trekkers</p><h3>{{ bookings|length }}</h3></article><article class="metric-card"><p>Difficulty</p><h3>{{ trek.difficulty }}</h3></article><article class="metric-card"><p>Current status</p><h3>{{ trek.status }}</h3></article></section>

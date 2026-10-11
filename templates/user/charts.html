@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Your insights · Trailhead{% endblock %}
+{% block title %}Your insights · TrekSphere{% endblock %}
 {% block content %}
 <header class="page-header"><div><p class="eyebrow">Your record</p><h1>Trekking insights</h1><p>A simple view of your booking activity and route difficulty.</p></div></header>
 {% if booked + completed + cancelled == 0 %}<div class="empty-state"><h2>No booking data yet</h2><p>Book a trek and your personal insights will begin here.</p><a href="{{ url_for('user_treks') }}" class="btn btn-primary">Discover treks</a></div>{% else %}<section class="chart-grid" aria-label="Personal trekking charts"><article class="chart-card"><div class="section-heading"><div><p class="eyebrow">Bookings</p><h2>Current outcomes</h2></div></div><canvas id="statusChart" aria-label="Bookings by status"></canvas><p class="chart-fallback">{{ booked }} active, {{ completed }} completed, {{ cancelled }} cancelled.</p></article><article class="chart-card"><div class="section-heading"><div><p class="eyebrow">Routes</p><h2>Difficulty mix</h2></div></div><canvas id="difficultyChart" aria-label="Booked treks by difficulty"></canvas><p class="chart-fallback">Counts by difficulty: {{ diff_counts|join(', ') }}</p></article></section>{% endif %}

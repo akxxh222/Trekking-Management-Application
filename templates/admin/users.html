@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}People · Trailhead{% endblock %}
+{% block title %}People · TrekSphere{% endblock %}
 {% block content %}
 <header class="page-header"><div><p class="eyebrow">Access</p><h1>People</h1><p>Review staff requests and manage account availability.</p></div></header>
 <form method="GET" action="{{ url_for('admin_users') }}" class="filter-bar"><div class="filter-grow"><label class="visually-hidden" for="user-search">Search people</label><input type="search" id="user-search" name="search" class="form-control" placeholder="Search by name" value="{{ search }}"></div><button type="submit" class="btn btn-primary">Search</button>{% if search %}<a href="{{ url_for('admin_users') }}" class="btn btn-quiet">Clear</a>{% endif %}</form>

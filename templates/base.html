@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#244436">
-    <title>{% block title %}Trailhead{% endblock %}</title>
+    <title>{% block title %}TrekSphere{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/app.css') }}" rel="stylesheet">
 </head>
@@ -16,7 +16,7 @@
         <div class="container app-container">
             <a class="brand" href="{{ url_for(home_endpoint) }}">
                 <span class="brand-mark" aria-hidden="true">T</span>
-                <span>Trailhead</span>
+                <span>TrekSphere</span>
             </a>
 
             {% if role %}

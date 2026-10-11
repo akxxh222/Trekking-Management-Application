@@ -20,6 +20,14 @@ def test_shared_shell_loads_assets_without_inline_presentation(client):
     assert 'href="#"' not in page
 
 
+def test_login_uses_treksphere_brand_without_removed_tagline(client):
+    page = rendered(client, "/login")
+
+    assert "TrekSphere" in page
+    assert "Trailhead" not in page
+    assert "Built for the trail, useful at the desk." not in page
+
+
 def test_shared_assets_expose_responsive_accessible_design_system(client):
     css = client.get("/static/css/app.css")
     script = client.get("/static/js/app.js")

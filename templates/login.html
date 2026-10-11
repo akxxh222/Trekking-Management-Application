@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Sign in · Trailhead{% endblock %}
+{% block title %}Sign in · TrekSphere{% endblock %}
 
 {% block content %}
 <section class="public-shell" aria-labelledby="login-title">
@@ -9,13 +9,12 @@
         <h1>Your treks,<br>clearly managed.</h1>
         <p>One calm place for teams and trekkers to keep every journey moving.</p>
         <div class="trail-line" aria-hidden="true"></div>
-        <p class="brand-note">Built for the trail, useful at the desk.</p>
     </div>
 
     <div class="form-panel">
         <div class="form-heading">
             <p class="eyebrow">Welcome back</p>
-            <h2 id="login-title">Sign in to Trailhead</h2>
+            <h2 id="login-title">Sign in to TrekSphere</h2>
             <p>Use the email linked to your account.</p>
         </div>
 
@@ -34,7 +33,7 @@
             <button type="submit" class="btn btn-primary w-100">Sign in</button>
         </form>
 
-        <p class="form-switch">New to Trailhead? <a href="{{ url_for('register') }}">Create an account</a></p>
+        <p class="form-switch">New to TrekSphere? <a href="{{ url_for('register') }}">Create an account</a></p>
     </div>
 </section>
 {% endblock %}

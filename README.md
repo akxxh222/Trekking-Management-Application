@@ -1,6 +1,6 @@
-# Trailhead
+# TrekSphere
 
-Trailhead is a Flask application for running trekking operations. Trekkers can discover and book routes, field staff can manage assigned treks, and administrators can coordinate people, capacity, bookings, and reporting from one responsive interface.
+TrekSphere is a Flask application for running trekking operations. Trekkers can discover and book routes, field staff can manage assigned treks, and administrators can coordinate people, capacity, bookings, and reporting from one responsive interface.
 
 ## What it includes
 

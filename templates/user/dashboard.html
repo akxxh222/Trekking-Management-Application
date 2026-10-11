@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Your overview · Trailhead{% endblock %}
+{% block title %}Your overview · TrekSphere{% endblock %}
 {% block content %}
 <header class="page-header"><div><p class="eyebrow">Trekker desk</p><h1>Welcome back, {{ user.name }}</h1><p>Your bookings and next trail decisions, all in one place.</p></div><a href="{{ url_for('user_treks') }}" class="btn btn-primary">Discover treks</a></header>
 <section class="metric-grid metric-grid-three" aria-label="Booking summary"><article class="stat-card"><p>All bookings</p><h2>{{ total_bookings }}</h2></article><article class="stat-card"><p>Active bookings</p><h2>{{ active_bookings }}</h2></article><article class="stat-card"><p>Past or cancelled</p><h2>{{ total_bookings - active_bookings }}</h2></article></section>
