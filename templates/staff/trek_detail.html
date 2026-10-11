@@ -38,20 +38,24 @@
         <h5 class="card-title">Update Trek</h5>
         <form method="POST" action="{{ url_for('staff_update_trek', trek_id=trek.id) }}"
               class="d-flex gap-3 align-items-end flex-wrap">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <div>
-                <label class="form-label">Status</label>
-                <select name="status" class="form-select">
+                <label class="form-label" for="trek-status">Status</label>
+                <select id="trek-status" name="status" class="form-select" {% if trek.status == 'Completed' %}disabled{% endif %}>
                     {% for s in ['Pending', 'Open', 'Closed', 'Started', 'Ongoing', 'Completed'] %}
                     <option value="{{ s }}" {% if trek.status == s %}selected{% endif %}>{{ s }}</option>
                     {% endfor %}
                 </select>
+                {% if trek.status == 'Completed' %}
+                <input type="hidden" name="status" value="Completed">
+                {% endif %}
             </div>
 
             <div>
-                <label class="form-label">Available Slots</label>
-                <input type="number" name="available_slots" class="form-control"
-                       value="{{ trek.available_slots }}" min="0" max="{{ trek.total_slots }}">
+                <label class="form-label" for="available-slots">Available Slots</label>
+                <input type="number" id="available-slots" name="available_slots" class="form-control"
+                       value="{{ trek.available_slots }}" min="0" max="{{ trek.total_slots }}" step="1">
             </div>
 
             <button type="submit" class="btn btn-dark">Update</button>

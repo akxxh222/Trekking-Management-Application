@@ -141,6 +141,45 @@ def validate_trek_form(form, trek=None):
         'status': status,
     }, None
 
+
+def transition_booking_status(booking, new_status):
+    if new_status not in BOOKING_STATUSES:
+        return 'Choose a valid booking status.'
+    if booking.status == new_status:
+        return None
+
+    trek = booking.trek
+    if booking.status != 'Cancelled' and new_status == 'Cancelled':
+        if trek.available_slots >= trek.total_slots:
+            return 'Trek capacity is already fully available.'
+        trek.available_slots += 1
+    elif booking.status == 'Cancelled' and new_status != 'Cancelled':
+        if trek.available_slots <= 0:
+            return 'No available slot remains for this booking.'
+        trek.available_slots -= 1
+
+    booking.status = new_status
+    return None
+
+
+def validate_staff_trek_update(trek, form):
+    status = form.get('status') or ''
+    if status not in TREK_STATUSES:
+        return None, 'Choose a valid trek status.'
+    if trek.status == 'Completed' and status != 'Completed':
+        return None, 'A completed trek cannot be reopened.'
+
+    try:
+        available_slots = int(form.get('available_slots'))
+    except (TypeError, ValueError):
+        return None, 'Available slots must be a whole number.'
+    if available_slots < 0:
+        return None, 'Available slots must be zero or greater.'
+    if available_slots > trek.total_slots:
+        return None, 'Available slots cannot exceed total slots.'
+
+    return {'status': status, 'available_slots': available_slots}, None
+
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -442,16 +481,13 @@ def admin_bookings():
 @login_required
 @role_required('admin')
 def update_booking_status(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
+    booking = db.get_or_404(Booking, booking_id)
     new_status = request.form.get('status')
 
-    if new_status:
-        booking.status = new_status
-
-        # If admin marks booking as Completed, restore nothing
-        # If admin cancels, restore the slot
-        if new_status == 'Cancelled':
-            booking.trek.available_slots += 1
+    error = transition_booking_status(booking, new_status)
+    if error:
+        flash(error)
+        return redirect(url_for('admin_bookings'))
 
     db.session.commit()
     flash('Booking status updated.')
@@ -510,7 +546,7 @@ def staff_dashboard():
 @login_required
 @role_required('staff')
 def staff_trek_detail(trek_id):
-    trek = Trek.query.get_or_404(trek_id)
+    trek = db.get_or_404(Trek, trek_id)
 
     # Make sure this staff is actually assigned to this trek
     if trek.assigned_staff_id != session['user_id']:
@@ -552,25 +588,19 @@ def staff_profile():
 @login_required
 @role_required('staff')
 def staff_update_trek(trek_id):
-    trek = Trek.query.get_or_404(trek_id)
+    trek = db.get_or_404(Trek, trek_id)
 
     if trek.assigned_staff_id != session['user_id']:
         flash('You are not assigned to this trek.')
         return redirect(url_for('staff_dashboard'))
 
-    new_status = request.form.get('status')
-    new_slots = request.form.get('available_slots')
-
-    # Prevent moving a Completed trek back to any other status
-    if trek.status == 'Completed' and new_status != 'Completed':
-        flash('A completed trek cannot be reopened.')
+    data, error = validate_staff_trek_update(trek, request.form)
+    if error:
+        flash(error)
         return redirect(url_for('staff_trek_detail', trek_id=trek_id))
 
-    if new_status:
-        trek.status = new_status
-
-    if new_slots:
-        trek.available_slots = int(new_slots)
+    trek.status = data['status']
+    trek.available_slots = data['available_slots']
 
     db.session.commit()
     flash('Trek updated successfully.')
@@ -658,7 +688,7 @@ def user_treks():
 @login_required
 @role_required('trekker')
 def book_trek(trek_id):
-    trek = Trek.query.get_or_404(trek_id)
+    trek = db.get_or_404(Trek, trek_id)
 
     # Check 1: Trek must be Open
     if trek.status != 'Open':
@@ -711,7 +741,7 @@ def my_bookings():
 @login_required
 @role_required('trekker')
 def cancel_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
+    booking = db.get_or_404(Booking, booking_id)
 
     # Make sure this booking belongs to the logged-in user
     if booking.user_id != session['user_id']:
@@ -723,8 +753,10 @@ def cancel_booking(booking_id):
         flash('This booking cannot be cancelled.')
         return redirect(url_for('my_bookings'))
 
-    booking.status = 'Cancelled'
-    booking.trek.available_slots += 1  # Restore the slot
+    error = transition_booking_status(booking, 'Cancelled')
+    if error:
+        flash(error)
+        return redirect(url_for('my_bookings'))
 
     db.session.commit()
     flash('Booking cancelled. Slot has been restored.')

@@ -43,9 +43,11 @@
             </td>
             <td>
                 {% if booking.status == 'Booked' %}
-                <a href="{{ url_for('cancel_booking', booking_id=booking.id) }}"
-                   class="btn btn-sm btn-outline-danger"
-                   onclick="return confirm('Cancel this booking?')">Cancel</a>
+                <form method="POST" action="{{ url_for('cancel_booking', booking_id=booking.id) }}"
+                      data-confirm="Cancel this booking?">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Cancel booking</button>
+                </form>
                 {% else %}
                 <span class="text-muted">—</span>
                 {% endif %}
