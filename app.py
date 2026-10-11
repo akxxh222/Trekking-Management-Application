@@ -1,4 +1,5 @@
 import os
+import re
 import secrets
 
 from flask import Flask, abort, render_template, request, redirect, url_for, session, flash
@@ -44,6 +45,48 @@ def validate_csrf():
 
 # Decorators
 
+def dashboard_endpoint(role):
+    return {
+        'admin': 'admin_dashboard',
+        'staff': 'staff_dashboard',
+        'trekker': 'user_dashboard',
+    }.get(role, 'login')
+
+
+def normalize_email(value):
+    return (value or '').strip().lower()
+
+
+def valid_email(value):
+    return bool(re.fullmatch(r'[^@\s]+@[^@\s]+\.[^@\s]+', value or ''))
+
+
+def validate_account_form(form, registration):
+    name = (form.get('name') or '').strip()
+    password = form.get('password') or ''
+
+    if not name:
+        return None, 'Full name is required.'
+
+    if password and len(password) < 8:
+        return None, 'Password must be at least 8 characters.'
+
+    data = {'name': name, 'password': password}
+    if not registration:
+        return data, None
+
+    email = normalize_email(form.get('email'))
+    role = (form.get('role') or '').strip().lower()
+    if not valid_email(email):
+        return None, 'Enter a valid email address.'
+    if len(password) < 8:
+        return None, 'Password must be at least 8 characters.'
+    if role not in {'trekker', 'staff'}:
+        return None, 'Choose a valid account role.'
+
+    data.update(email=email, role=role)
+    return data, None
+
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -60,7 +103,7 @@ def role_required(role):
         def decorated(*args, **kwargs):
             if session.get('role') != role:
                 flash('You do not have permission to access that page.')
-                return redirect(url_for('login'))
+                return redirect(url_for(dashboard_endpoint(session.get('role'))))
             return f(*args, **kwargs)
         return decorated
     return decorator
@@ -76,10 +119,10 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+        email = normalize_email(request.form.get('email'))
+        password = request.form.get('password', '')
 
-        user = User.query.filter_by(email=email).first()
+        user = User.query.filter(db.func.lower(User.email) == email).first()
 
         if not user:
             flash('No account found with that email.')
@@ -116,29 +159,32 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        name = request.form['name']
-        email = request.form['email']
-        password = request.form['password']
-        role = request.form['role']  # 'trekker' or 'staff'
+        data, error = validate_account_form(request.form, registration=True)
+        if error:
+            flash(error)
+            role = request.form.get('role')
+            return redirect(url_for(
+                'register',
+                name=(request.form.get('name') or '').strip(),
+                email=normalize_email(request.form.get('email')),
+                role=role if role in {'trekker', 'staff'} else 'trekker'
+            ))
 
-        # Admin cannot be registered
-        if role == 'admin':
-            flash('Admin registration is not allowed.')
-            return redirect(url_for('register'))
-
-        existing = User.query.filter_by(email=email).first()
+        existing = User.query.filter(db.func.lower(User.email) == data['email']).first()
         if existing:
             flash('An account with this email already exists.')
-            return redirect(url_for('register'))
+            return redirect(url_for(
+                'register', name=data['name'], email=data['email'], role=data['role']
+            ))
 
         # Staff need approval, trekkers are auto-approved
-        is_approved = True if role == 'trekker' else False
+        is_approved = data['role'] == 'trekker'
 
         new_user = User(
-            name=name,
-            email=email,
-            password=generate_password_hash(password),
-            role=role,
+            name=data['name'],
+            email=data['email'],
+            password=generate_password_hash(data['password']),
+            role=data['role'],
             is_active=True,
             is_approved=is_approved
         )
@@ -146,7 +192,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        if role == 'staff':
+        if data['role'] == 'staff':
             flash('Registration successful. Wait for admin approval before logging in.')
         else:
             flash('Registration successful. Please login.')
@@ -407,14 +453,17 @@ def staff_trek_detail(trek_id):
 @login_required
 @role_required('staff')
 def staff_profile():
-    user = User.query.get(session['user_id'])
+    user = db.session.get(User, session['user_id'])
 
     if request.method == 'POST':
-        user.name = request.form['name']
-        new_password = request.form.get('password')
+        data, error = validate_account_form(request.form, registration=False)
+        if error:
+            flash(error)
+            return redirect(url_for('staff_profile'))
 
-        if new_password:
-            user.password = generate_password_hash(new_password)
+        user.name = data['name']
+        if data['password']:
+            user.password = generate_password_hash(data['password'])
 
         db.session.commit()
         session['name'] = user.name  # Update navbar name immediately
@@ -480,7 +529,7 @@ def staff_charts():
 @login_required
 @role_required('trekker')
 def user_dashboard():
-    user = User.query.get(session['user_id'])
+    user = db.session.get(User, session['user_id'])
 
     # Count this user's bookings
     total_bookings = Booking.query.filter_by(user_id=session['user_id']).count()
@@ -610,14 +659,17 @@ def cancel_booking(booking_id):
 @login_required
 @role_required('trekker')
 def user_profile():
-    user = User.query.get(session['user_id'])
+    user = db.session.get(User, session['user_id'])
 
     if request.method == 'POST':
-        user.name = request.form['name']
-        new_password = request.form.get('password')
+        data, error = validate_account_form(request.form, registration=False)
+        if error:
+            flash(error)
+            return redirect(url_for('user_profile'))
 
-        if new_password:
-            user.password = generate_password_hash(new_password)
+        user.name = data['name']
+        if data['password']:
+            user.password = generate_password_hash(data['password'])
 
         db.session.commit()
         session['name'] = user.name  # Update session name too
