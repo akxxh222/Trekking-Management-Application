@@ -4,7 +4,8 @@
 <h4 class="mb-3">Users & Staff</h4>
 
 <form method="GET" action="{{ url_for('admin_users') }}" class="mb-3 d-flex gap-2">
-    <input type="text" name="search" class="form-control" placeholder="Search by name" value="{{ search }}">
+    <label class="visually-hidden" for="user-search">Search by name</label>
+    <input type="text" id="user-search" name="search" class="form-control" placeholder="Search by name" value="{{ search }}">
     <button type="submit" class="btn btn-outline-dark">Search</button>
     <a href="{{ url_for('admin_users') }}" class="btn btn-outline-secondary">Clear</a>
 </form>
@@ -41,15 +42,18 @@
                 {% endif %}
             </td>
             <td class="d-flex gap-1 flex-wrap">
-                <a href="{{ url_for('toggle_user', user_id=user.id) }}"
-                   class="btn btn-sm {{ 'btn-outline-danger' if user.is_active else 'btn-outline-success' }}">
-                    {{ 'Deactivate' if user.is_active else 'Activate' }}
-                </a>
+                <form method="POST" action="{{ url_for('toggle_user', user_id=user.id) }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm {{ 'btn-outline-danger' if user.is_active else 'btn-outline-success' }}">
+                        {{ 'Deactivate' if user.is_active else 'Activate' }}
+                    </button>
+                </form>
 
                 {% if user.role == 'staff' and not user.is_approved %}
-                <a href="{{ url_for('approve_staff', user_id=user.id) }}" class="btn btn-sm btn-outline-dark">
-                    Approve
-                </a>
+                <form method="POST" action="{{ url_for('approve_staff', user_id=user.id) }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm btn-outline-dark">Approve staff</button>
+                </form>
                 {% endif %}
             </td>
         </tr>

@@ -9,21 +9,22 @@
                 <h4 class="mb-4">{{ 'Edit Trek' if trek else 'Create Trek' }}</h4>
 
                 <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
-                        <label class="form-label">Trek Name</label>
-                        <input type="text" name="name" class="form-control" required
+                        <label class="form-label" for="trek-name">Trek Name</label>
+                        <input type="text" id="trek-name" name="name" class="form-control" required
                                value="{{ trek.name if trek else '' }}">
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Location</label>
-                        <input type="text" name="location" class="form-control" required
+                        <label class="form-label" for="trek-location">Location</label>
+                        <input type="text" id="trek-location" name="location" class="form-control" required
                                value="{{ trek.location if trek else '' }}">
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Difficulty</label>
-                        <select name="difficulty" class="form-select" required>
+                        <label class="form-label" for="trek-difficulty">Difficulty</label>
+                        <select id="trek-difficulty" name="difficulty" class="form-select" required>
                             <option value="">-- Select --</option>
                             {% for level in ['Easy', 'Medium', 'Hard'] %}
                             <option value="{{ level }}"
@@ -35,21 +36,21 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Duration (days)</label>
-                        <input type="number" name="duration_days" class="form-control" required min="1"
+                        <label class="form-label" for="trek-duration">Duration (days)</label>
+                        <input type="number" id="trek-duration" name="duration_days" class="form-control" required min="1" step="1"
                                value="{{ trek.duration_days if trek else '' }}">
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Total Slots</label>
-                        <input type="number" name="total_slots" class="form-control" required min="1"
+                        <label class="form-label" for="trek-slots">Total Slots</label>
+                        <input type="number" id="trek-slots" name="total_slots" class="form-control" required min="1" step="1"
                                value="{{ trek.total_slots if trek else '' }}">
                     </div>
 
                     {% if trek %}
                     <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <select name="status" class="form-select">
+                        <label class="form-label" for="trek-status">Status</label>
+                        <select id="trek-status" name="status" class="form-select">
                             {% for s in ['Pending', 'Open', 'Closed', 'Started', 'Ongoing', 'Completed'] %}
                             <option value="{{ s }}" {% if trek.status == s %}selected{% endif %}>{{ s }}</option>
                             {% endfor %}

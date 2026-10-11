@@ -17,7 +17,7 @@ from models import Booking, Trek, User, db  # noqa: E402
 
 @pytest.fixture()
 def app_context():
-    flask_app.config.update(TESTING=True)
+    flask_app.config.update(TESTING=True, PROPAGATE_EXCEPTIONS=False)
     with flask_app.app_context():
         db.drop_all()
         db.create_all()

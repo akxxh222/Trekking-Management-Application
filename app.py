@@ -29,6 +29,10 @@ def csrf_token():
 
 app.jinja_env.globals['csrf_token'] = csrf_token
 
+TREK_DIFFICULTIES = ('Easy', 'Medium', 'Hard')
+TREK_STATUSES = ('Pending', 'Open', 'Closed', 'Started', 'Ongoing', 'Completed')
+BOOKING_STATUSES = ('Booked', 'Cancelled', 'Completed')
+
 
 @app.before_request
 def validate_csrf():
@@ -86,6 +90,56 @@ def validate_account_form(form, registration):
 
     data.update(email=email, role=role)
     return data, None
+
+
+def parse_positive_int(value, field_name):
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return None, f'{field_name} must be a whole number.'
+    if parsed <= 0:
+        return None, f'{field_name} must be greater than zero.'
+    return parsed, None
+
+
+def validate_trek_form(form, trek=None):
+    name = (form.get('name') or '').strip()
+    location = (form.get('location') or '').strip()
+    difficulty = form.get('difficulty') or ''
+
+    if not name:
+        return None, 'Trek name is required.'
+    if not location:
+        return None, 'Location is required.'
+    if difficulty not in TREK_DIFFICULTIES:
+        return None, 'Choose a valid difficulty.'
+
+    duration_days, error = parse_positive_int(form.get('duration_days'), 'Duration')
+    if error:
+        return None, error
+    total_slots, error = parse_positive_int(form.get('total_slots'), 'Total slots')
+    if error:
+        return None, error
+
+    status = 'Pending'
+    occupied_slots = 0
+    if trek is not None:
+        status = form.get('status') or ''
+        if status not in TREK_STATUSES:
+            return None, 'Choose a valid trek status.'
+        occupied_slots = trek.total_slots - trek.available_slots
+        if total_slots < occupied_slots:
+            return None, 'Total slots cannot be lower than occupied slots.'
+
+    return {
+        'name': name,
+        'location': location,
+        'difficulty': difficulty,
+        'duration_days': duration_days,
+        'total_slots': total_slots,
+        'available_slots': total_slots - occupied_slots,
+        'status': status,
+    }, None
 
 def login_required(f):
     @wraps(f)
@@ -249,20 +303,13 @@ def admin_treks():
 @role_required('admin')
 def create_trek():
     if request.method == 'POST':
-        name = request.form['name']
-        location = request.form['location']
-        difficulty = request.form['difficulty']
-        duration_days = int(request.form['duration_days'])
-        total_slots = int(request.form['total_slots'])
+        data, error = validate_trek_form(request.form)
+        if error:
+            flash(error)
+            return redirect(url_for('create_trek'))
 
         new_trek = Trek(
-            name=name,
-            location=location,
-            difficulty=difficulty,
-            duration_days=duration_days,
-            total_slots=total_slots,
-            available_slots=total_slots,
-            status='Pending'
+            **data
         )
         db.session.add(new_trek)
         db.session.commit()
@@ -276,15 +323,16 @@ def create_trek():
 @login_required
 @role_required('admin')
 def edit_trek(trek_id):
-    trek = Trek.query.get_or_404(trek_id)
+    trek = db.get_or_404(Trek, trek_id)
 
     if request.method == 'POST':
-        trek.name = request.form['name']
-        trek.location = request.form['location']
-        trek.difficulty = request.form['difficulty']
-        trek.duration_days = int(request.form['duration_days'])
-        trek.total_slots = int(request.form['total_slots'])
-        trek.status = request.form['status']
+        data, error = validate_trek_form(request.form, trek)
+        if error:
+            flash(error)
+            return redirect(url_for('edit_trek', trek_id=trek.id))
+
+        for field, value in data.items():
+            setattr(trek, field, value)
 
         db.session.commit()
         flash('Trek updated successfully.')
@@ -297,7 +345,11 @@ def edit_trek(trek_id):
 @login_required
 @role_required('admin')
 def delete_trek(trek_id):
-    trek = Trek.query.get_or_404(trek_id)
+    trek = db.get_or_404(Trek, trek_id)
+    if trek.bookings:
+        flash('This trek has booking history and cannot be deleted.')
+        return redirect(url_for('admin_treks'))
+
     db.session.delete(trek)
     db.session.commit()
     flash('Trek deleted.')
@@ -308,9 +360,22 @@ def delete_trek(trek_id):
 @login_required
 @role_required('admin')
 def assign_staff(trek_id):
-    trek = Trek.query.get_or_404(trek_id)
+    trek = db.get_or_404(Trek, trek_id)
     staff_id = request.form.get('staff_id')
-    trek.assigned_staff_id = int(staff_id) if staff_id else None
+    if not staff_id:
+        trek.assigned_staff_id = None
+    else:
+        try:
+            staff_id = int(staff_id)
+        except (TypeError, ValueError):
+            flash('Choose an eligible staff member.')
+            return redirect(url_for('admin_treks'))
+
+        staff = db.session.get(User, staff_id)
+        if not staff or staff.role != 'staff' or not staff.is_active or not staff.is_approved:
+            flash('Choose an eligible active, approved staff member.')
+            return redirect(url_for('admin_treks'))
+        trek.assigned_staff_id = staff.id
     db.session.commit()
     flash('Staff assigned successfully.')
     return redirect(url_for('admin_treks'))
@@ -336,7 +401,11 @@ def admin_users():
 @login_required
 @role_required('admin')
 def toggle_user(user_id):
-    user = User.query.get_or_404(user_id)
+    user = db.get_or_404(User, user_id)
+    if user.role == 'admin':
+        flash('Administrator accounts cannot be changed here.')
+        return redirect(url_for('admin_users'))
+
     user.is_active = not user.is_active
     db.session.commit()
     status = 'activated' if user.is_active else 'deactivated'
@@ -348,7 +417,14 @@ def toggle_user(user_id):
 @login_required
 @role_required('admin')
 def approve_staff(user_id):
-    user = User.query.get_or_404(user_id)
+    user = db.get_or_404(User, user_id)
+    if user.role == 'admin':
+        flash('Administrator accounts cannot be changed here.')
+        return redirect(url_for('admin_users'))
+    if user.role != 'staff':
+        flash('Only staff accounts can be approved.')
+        return redirect(url_for('admin_users'))
+
     user.is_approved = True
     db.session.commit()
     flash(f'{user.name} has been approved as trek staff.')
