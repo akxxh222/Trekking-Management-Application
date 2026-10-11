@@ -1,18 +1,45 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+import os
+import secrets
+
+from flask import Flask, abort, render_template, request, redirect, url_for, session, flash
 from models import db, User, Trek, Booking
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date
 from functools import wraps
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'trekking_secret_key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///trekking.db'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-only-change-me')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///trekking.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
 
 with app.app_context():
     db.create_all()
+
+
+def csrf_token():
+    token = session.get('csrf_token')
+    if token is None:
+        token = secrets.token_urlsafe(32)
+        session['csrf_token'] = token
+    return token
+
+
+app.jinja_env.globals['csrf_token'] = csrf_token
+
+
+@app.before_request
+def validate_csrf():
+    if request.method != 'POST':
+        return None
+
+    expected = session.get('csrf_token')
+    supplied = request.form.get('csrf_token', '')
+    if not expected or not secrets.compare_digest(expected, supplied):
+        abort(400, description='Invalid or missing CSRF token.')
+
+    return None
 
 
 # Decorators
@@ -129,7 +156,7 @@ def register():
     return render_template('register.html')
 
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 def logout():
     session.clear()
     flash('You have been logged out.')
@@ -220,7 +247,7 @@ def edit_trek(trek_id):
     return render_template('admin/trek_form.html', trek=trek)
 
 
-@app.route('/admin/trek/delete/<int:trek_id>')
+@app.route('/admin/trek/delete/<int:trek_id>', methods=['POST'])
 @login_required
 @role_required('admin')
 def delete_trek(trek_id):
@@ -259,7 +286,7 @@ def admin_users():
     return render_template('admin/users.html', users=users, search=search)
 
 
-@app.route('/admin/user/toggle/<int:user_id>')
+@app.route('/admin/user/toggle/<int:user_id>', methods=['POST'])
 @login_required
 @role_required('admin')
 def toggle_user(user_id):
@@ -271,7 +298,7 @@ def toggle_user(user_id):
     return redirect(url_for('admin_users'))
 
 
-@app.route('/admin/user/approve/<int:user_id>')
+@app.route('/admin/user/approve/<int:user_id>', methods=['POST'])
 @login_required
 @role_required('admin')
 def approve_staff(user_id):
@@ -502,7 +529,7 @@ def user_treks():
     )
 
 
-@app.route('/user/book/<int:trek_id>')
+@app.route('/user/book/<int:trek_id>', methods=['POST'])
 @login_required
 @role_required('trekker')
 def book_trek(trek_id):
@@ -555,7 +582,7 @@ def my_bookings():
     return render_template('user/my_bookings.html', bookings=bookings)
 
 
-@app.route('/user/cancel/<int:booking_id>')
+@app.route('/user/cancel/<int:booking_id>', methods=['POST'])
 @login_required
 @role_required('trekker')
 def cancel_booking(booking_id):
@@ -644,6 +671,6 @@ def user_charts():
     )
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)
 
 

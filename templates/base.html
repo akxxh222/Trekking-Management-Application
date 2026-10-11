@@ -258,7 +258,10 @@
                 {{ session['name'] }}
                 <span class="text-white-50">({{ session['role'] }})</span>
             </span>
-            <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">Logout</a>
+            <form method="POST" action="{{ url_for('logout') }}" class="m-0">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+            </form>
         </div>
         {% endif %}
     </div>
