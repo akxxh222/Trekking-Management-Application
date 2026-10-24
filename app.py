@@ -71,6 +71,8 @@ def validate_account_form(form, registration):
 
     if not name:
         return None, 'Full name is required.'
+    if len(name) > User.name.type.length:
+        return None, f'Full name must be at most {User.name.type.length} characters.'
 
     if password and len(password) < 8:
         return None, 'Password must be at least 8 characters.'
@@ -81,6 +83,8 @@ def validate_account_form(form, registration):
 
     email = normalize_email(form.get('email'))
     role = (form.get('role') or '').strip().lower()
+    if len(email) > User.email.type.length:
+        return None, f'Email must be at most {User.email.type.length} characters.'
     if not valid_email(email):
         return None, 'Enter a valid email address.'
     if len(password) < 8:
@@ -111,6 +115,10 @@ def validate_trek_form(form, trek=None):
         return None, 'Trek name is required.'
     if not location:
         return None, 'Location is required.'
+    if len(name) > Trek.name.type.length:
+        return None, f'Trek name must be at most {Trek.name.type.length} characters.'
+    if len(location) > Trek.location.type.length:
+        return None, f'Location must be at most {Trek.location.type.length} characters.'
     if difficulty not in TREK_DIFFICULTIES:
         return None, 'Choose a valid difficulty.'
 

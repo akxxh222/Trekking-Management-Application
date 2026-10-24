@@ -41,6 +41,18 @@ $env:SECRET_KEY = "replace-with-a-long-random-value"
 
 The default database is stored at `instance/trekking.db`. To use a different database URL, set `DATABASE_URL` before starting the app.
 
+Column sizes in `models.py` allow 25 characters for user names, trek names, and
+locations, 254 for emails, and 255 for password hashes. Roles use 7 characters,
+difficulty uses 6, trek and booking statuses use 9, payment status uses 10, and
+booking dates use 10 (`YYYY-MM-DD`). IDs, durations, and slot counts remain integers.
+Account and trek forms validate free-text lengths on the server because SQLite
+does not enforce `VARCHAR` lengths.
+
+These declarations apply to newly created tables. `db.create_all()` does not alter
+existing tables; existing databases need a schema migration to update their declared
+column sizes. Back up existing data before migrating; do not delete the database
+to apply this change.
+
 Create the initial administrator, then run the server:
 
 ```powershell
